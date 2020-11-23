@@ -1,0 +1,19 @@
+diff --git a/pkg/activator/handler/concurrency_reporter_test.go b/pkg/activator/handler/concurrency_reporter_test.go
+index 47f48fcb3..8b0d1d399 100644
+--- a/pkg/activator/handler/concurrency_reporter_test.go
++++ b/pkg/activator/handler/concurrency_reporter_test.go
+@@ -199,12 +199,10 @@ func TestStats(t *testing.T) {
+ 
+ 	for _, tc := range tt {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			defer ClearAll()
+-			stopCh := make(chan struct{})
+-			defer close(stopCh)
++			closeCh := make(chan struct{})
+ 			s, cr := newTestStats(t, fakeClock{})
+ 			go func() {
+-				cr.Run(stopCh)
++				cr.Run(closeCh)
+ 			}()
+ 
+ 			// Apply request operations

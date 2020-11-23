@@ -1,0 +1,22 @@
+diff --git a/gossip/server.go b/gossip/server.go
+index c557277b32..3c53f995d9 100644
+--- a/gossip/server.go
++++ b/gossip/server.go
+@@ -132,14 +132,9 @@ func (s *server) Gossip(stream Gossip_GossipServer) error {
+ 		return util.Errorf("duplicate connection from node at %s", args.Addr)
+ 	}
+ 
+-	// Starting the worker in a task prevents data races during shutdown.
+-	if !s.stopper.RunTask(func() {
+-		s.stopper.RunWorker(func() {
+-			s.gossipSender(&args, send)
+-		})
+-	}) {
+-		return nil
+-	}
++	s.stopper.RunWorker(func() {
++		s.gossipSender(&args, send)
++	})
+ 
+ 	reply := new(Response)
+ 

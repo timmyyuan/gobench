@@ -1,0 +1,1538 @@
+{
+  "cockroach_1055": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & WaitGroup",
+    "goversion": "1.6",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "83b4b42082555f829a13c4f523b118ed406c4190",
+    "testfunc": "TestStopperQuiesce",
+    "workdir": "./util",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i 's/bitbucket\\.org\\/tebeka\\/go2xunit/github\\.com\\/tebeka\\/go2xunit/' GLOCKFILE",
+      "sed -i 's/77968f802fb3/c56ca70664d63e071d3abf0fbf70912fdf05b4ac/' GLOCKFILE",
+      "sed -i '75s/PKG)/PKG) -c -o \\/go\\/gobench.test/' Makefile",
+      "sed -i '76d' Makefile"
+    ],
+    "build_commands": [
+      "make test PKG=./util"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make test PKG=./util"
+    ]
+  },
+  "cockroach_1462": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & WaitGroup",
+    "goversion": "1.8.6",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "2f95a7668a95fcb36c05ac73e283e35205fb5298",
+    "testfunc": "TestHeartbeatSingleGroup",
+    "workdir": "./multiraft",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '111s/p /p -o \\/go\\/gobench.test /' Makefile",
+      "sed -i 's/bitbucket\\.org\\/tebeka\\/go2xunit/github\\.com\\/tebeka\\/go2xunit/' GLOCKFILE",
+      "sed -i 's/77968f802fb3/c56ca70664d63e071d3abf0fbf70912fdf05b4ac/' GLOCKFILE",
+      "sed -i '/^build: LDFLAGS*/d' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./multiraft"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./multiraft"
+    ]
+  },
+  "cockroach_17766": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.9",
+    "dev_deps": [
+      "cmake",
+      "autoconf"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "b12d4f2abbf8669ce46ed5ca54ac266bfb4b2eb2",
+    "testfunc": "TestRangeLookupAsyncResolveIntent",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '194s/{{.Dir}}\\/{{.Name}}/\\/go\\/gobench/' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./pkg/storage"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./pkg/storage"
+    ]
+  },
+  "cockroach_24808": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "464ec953d579be4b4e79a1fb7a021bf79a279cd5",
+    "testfunc": "TestCompactorDeadlockOnStart",
+    "workdir": "./pkg/storage/compactor",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '610s/$/\u0026 -Wno-error=class-memaccess/g' Makefile",
+      "sed -i '773s/{{.Dir}}\\/{{.Name}}/\\/go\\/gobench/' Makefile",
+      "sed -i '1002a \\$(GOGOPROTO_PROTO): \\$(SUBMODULES_TARGET)' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./pkg/storage/compactor"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./pkg/storage/compactor"
+    ]
+  },
+  "cockroach_25456": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "7055cc8d96883bda2f69bb1fe8bc7512b2543132",
+    "testfunc": "TestConsistenctQueueErrorFromCheckConsistency",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '616s/$/\u0026 -Wno-error=class-memaccess/g' Makefile",
+      "sed -i '802s/{{.Dir}}\\/{{.Name}}/\\/go\\/gobench/' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./pkg/storage"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./pkg/storage"
+    ]
+  },
+  "cockroach_30452": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison",
+      "libncurses5-dev"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "db68ad943b2677a18ad8ab3ed8dc20d8c2790f7e",
+    "testfunc": "TestReplicaIDChangePending",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '836s/-run.*//' Makefile",
+      "sed -i '836s/$/ \\$(PKG) -c -o \\/go\\/gobench.test/' Makefile"
+    ],
+    "build_commands": [
+      "make stress PKG=./pkg/storage/ STRESSFLAGS='-maxtime 2m -timeout 1m'"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make stress PKG=./pkg/storage/ STRESSFLAGS='-maxtime 2m -timeout 1m'"
+    ]
+  },
+  "cockroach_30479": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "b535ab50cbec22816ecfee8582e482fca817b855",
+    "testfunc": "TestGossipFirstRange",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '836s/-run.*//' Makefile",
+      "sed -i '836s/$/ \\$(PKG) -c -o \\/go\\/gobench.test/' Makefile"
+    ],
+    "build_commands": [
+      "make stress PKG=./pkg/storage STRESSFLAGS='-maxtime 2m -timeout 1m'"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make stress PKG=./pkg/storage STRESSFLAGS='-maxtime 20m -timeout 10m'"
+    ]
+  },
+  "cockroach_35073": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.11",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "6789ac585085b3c8546b77bc9c698be7f38277fb",
+    "testfunc": "TestOutboxUnblocksProducers",
+    "workdir": "./pkg/sql/distsqlrun",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '859s/{{.Dir}}\\/{{.Name}}/\\/go\\/gobench/' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./pkg/sql/distsqlrun"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./pkg/sql/distsqlrun"
+    ]
+  },
+  "cockroach_35931": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.11",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "07b4731d7269cfc77e790aaeb8f1262b5c35c9f4",
+    "testfunc": "TestFlowCancelPartiallyBlocked",
+    "workdir": "./pkg/sql/distsqlrun",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '866s/{{.Dir}}\\/{{.Name}}/\\/go\\/gobench/' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild PKG=./pkg/sql/distsqlrun"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make testbuild PKG=./pkg/sql/distsqlrun"
+    ]
+  },
+  "cockroach_36367": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.11",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison"
+    ],
+    "pkg_deps": [],
+    "git_deps": [
+      {
+        "url": "https://github.com/cockroachdb/vendored",
+        "dst": "vendor"
+      },
+      {
+        "url": "https://github.com/cockroachdb/jemalloc.git",
+        "dst": "c-deps/jemalloc"
+      },
+      {
+        "url": "https://github.com/cockroachdb/rocksdb.git",
+        "dst": "c-deps/rocksdb"
+      },
+      {
+        "url": "https://github.com/cockroachdb/snappy.git",
+        "dst": "c-deps/snappy"
+      },
+      {
+        "url": "https://github.com/cockroachdb/protobuf.git",
+        "dst": "c-deps/protobuf"
+      },
+      {
+        "url": "https://github.com/cockroachdb/cryptopp.git",
+        "dst": "c-deps/cryptopp"
+      },
+      {
+        "url": "https://github.com/cockroachdb/googletest",
+        "dst": "c-deps/googletest"
+      },
+      {
+        "url": "https://github.com/cockroachdb/yarn-vendored",
+        "dst": "pkg/ui/yarn-vendor"
+      }
+    ],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "68d5970a33aef59a4489b41798f84b26b0e45641",
+    "testfunc": "TestStoreRangeMergeInFlightTxns",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '899s/-run.*//' Makefile",
+      "sed -i '899s/$/ \\$(PKG) -c -o \\/go\\/gobench.test/' Makefile"
+    ],
+    "build_commands": [
+      "make stressrace PKG=./pkg/storage STRESSFLAGS='-maxtime 2m -timeout 1m'"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/cockroachdb/cockroach -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/cockroachdb/cockroach || true",
+      "rm -rf /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/sasha-s/go-deadlock.git /go/src/github.com/cockroachdb/cockroach/vendor/github.com/sasha-s/go-deadlock",
+      "make stressrace PKG=./pkg/storage STRESSFLAGS='-maxtime 20m -timeout 10m'"
+    ]
+  },
+  "etcd_10492": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "4b69cfc56b070456cefabea86e57f9ccd1ab09a2",
+    "testfunc": "TestLessorRenewWithCheckpointer",
+    "workdir": "./lease",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '135 igo test ./lease -c -o /go/gobench.test' test",
+      "sed -i '136 iexit 0' test"
+    ],
+    "build_commands": [
+      "VERBOSE=1 PKG=./lease PASSES='unit' ./test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/coreos/etcd || true",
+      "VERBOSE=1 PKG=./lease PASSES='unit' ./test"
+    ]
+  },
+  "etcd_5509": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.10",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "9ed3b446cadd9f43734d9eed9dcb03f3b12567a5",
+    "testfunc": "TestKVGetErrConnClosed",
+    "workdir": "./clientv3/integration",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '167s/fmt_tests/# fmt_tests/' test",
+      "sed -i '170s/unit_tests/# unit_tests/' test",
+      "sed -i '73,74d' test",
+      "sed -i '72 igo test \\${REPO_PATH}/clientv3/integration -c -o /go/gobench.test' test",
+      "sed -i '73 iexit 0' test",
+      "sed -i '66,71d' test"
+    ],
+    "build_commands": [
+      "INTEGRATION=1 ./test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/coreos/etcd || true",
+      "git clone https://github.com/sasha-s/go-deadlock.git cmd/vendor/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/petermattis/goid.git cmd/vendor/github.com/petermattis/goid",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" -exec sed -i 's/^.*go-deadlock\"$/\"github.com\\/sasha-s\\/go-deadlock\"/' {} \\;",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" -exec sed -i 's/^.*goid\"$/\"github.com\\/petermattis\\/goid\"/' {} \\;",
+      "INTEGRATION=1 ./test"
+    ]
+  },
+  "etcd_6708": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/ugorji/go/codec",
+      "golang.org/x/net/context"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "4f60f1b71f8608bc6f5c2a3296561cbc16d94d12",
+    "testfunc": "TestHTTPClusterClientSyncPinLeaderEndpoint",
+    "workdir": "./client",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "cd /go/src/github.com/ugorji/go/codec",
+      "git reset --hard faddd6128c66c4708f45fdc007f575f75e592a3c"
+    ],
+    "build_commands": [
+      "cd /go/src/github.com/coreos/etcd",
+      "go test ./client -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/coreos/etcd || true",
+      "cd /go/src/github.com/coreos/etcd && go test ./client -c -o /go/gobench.test"
+    ]
+  },
+  "etcd_7443": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.10",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "0a692b0524625996e48f5d3a47cfeac7fe9cc759",
+    "testfunc": "TestBalancerDoNotBlockOnClose",
+    "workdir": "./clientv3",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '72 igo test ./clientv3 -c -o /go/gobench.test' test",
+      "sed -i '73 iexit 0' test"
+    ],
+    "build_commands": [
+      "PKG=./clientv3 PASSES='build unit' ./test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/coreos/etcd || true",
+      "PKG=./clientv3 PASSES='build unit' ./test"
+    ]
+  },
+  "etcd_7492": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "148c923c72c4aa9207173c03b775e2c0b8754067",
+    "testfunc": "TestHammerSimpleAuthenticate",
+    "workdir": "./auth",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '72 igo test ./auth -c -o /go/gobench.test' test",
+      "sed -i '73 iexit 0' test"
+    ],
+    "build_commands": [
+      "PKG=./auth PASSES='build unit' ./test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/coreos/etcd -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/coreos/etcd || true",
+      "PKG=./auth PASSES='build unit' ./test"
+    ]
+  },
+  "grpc_1275": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "7df48bee8829276b13ef52bff4e1c47b9d55cd7d",
+    "testfunc": "TestInflightStreamClosing",
+    "workdir": "./transport",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./transport -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./transport -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_1424": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "4e56696c6c5a8cd7b711a1eb8936463559361da5",
+    "testfunc": "TestClientLBWatcherWithClosedBalancer",
+    "workdir": ".",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test . -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test . -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_1859": {
+    "type":"Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "484b3ebb4ab56d3decc8240d599718bdbefcf7eb",
+    "testfunc": "TestClientDoesntDeadlockWhileWritingErrornousLargeMessages",
+    "workdir": "./test",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./test -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./test -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_2391": {
+    "type":"Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "ff2aa05958775030998dbe2f9bccbe2af324adf4",
+    "testfunc": "TestGoAwayThenClose",
+    "workdir": "./test",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./test -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./test -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_3017": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "ac35b67779b9802189d5c0bcfc25d84ce7ba36a1",
+    "testfunc": "TestLBCache_RemoveTimer_New_Race",
+    "workdir": "./balancer/grpclb",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./balancer/grpclb -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./balancer/grpclb -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_649": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "95f4d27b65d5ab09c81066045034e9286e278430",
+    "testfunc": "TestErrorChanNoIO",
+    "workdir": "./test",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '478s/%d/%v/' ./test/end2end_test.go",
+      "sed -i '1866s/Canceled\\\")/Canceled\\\", got)/' ./test/end2end_test.go",
+      "sed -i '1848s/Canceled\\\")/Canceled\\\", got)/' ./test/end2end_test.go",
+      "sed -i '1882s/RunTests//' ./test/end2end_test.go",
+      "sed -i '1864s/RunTests//' ./test/end2end_test.go"
+    ],
+    "build_commands": [
+      "go test ./test -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./test -c -o /go/gobench.test"
+    ]
+  },
+  "grpc_795": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "5a547ed72c09faf4050739d54caea1d51f4d276d",
+    "testfunc": "TestServerGracefulStopIdempotent",
+    "workdir": "./test",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '431s/%d/%v/' ./test/end2end_test.go"
+    ],
+    "build_commands": [
+      "go test ./test -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/google.golang.org/grpc -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/google.golang.org/grpc || true",
+      "go test ./test -c -o /go/gobench.test"
+    ]
+  },
+  "hugo_3251": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA Deadlock",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/gohugoio/hugo",
+    "src_path": "github.com/spf13/hugo",
+    "pull_sha": "79b34c2f1e0ba91ff5f4f879dc42eddfd82cc563",
+    "testfunc": "TestScpGetRemoteParallel",
+    "workdir": "./tpl/tplimpl",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "make hugo"
+    ],
+    "build_commands": [
+      "go test ./tpl/tplimpl -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/spf13/hugo -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/spf13/hugo -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/spf13/hugo || true",
+      "go test ./tpl/tplimpl -c -o /go/gobench.test"
+    ]
+  },
+  "hugo_5379": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/gohugoio/hugo",
+    "src_path": "github.com/gohugoio/hugo",
+    "pull_sha": "729593c842794eaf7127050953a5c2256d332051",
+    "testfunc": "TestSiteBuildTimeout",
+    "workdir": "./hugolib",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./hugolib -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/gohugoio/hugo -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/gohugoio/hugo -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/gohugoio/hugo || true",
+      "go test ./hugolib -c -o /go/gobench.test"
+    ]
+  },
+  "istio_16224": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "4728b94bc9f00b0d3109df142d5b37a314bf08b3",
+    "testfunc": "TestEventConsistency",
+    "workdir": "./pilot/pkg/config/memory",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pilot/pkg/config/memory -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/istio.io/istio || true",
+      "go test ./pilot/pkg/config/memory -c -o /go/gobench.test"
+    ]
+  },
+  "istio_17860": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "c6e9130227497ab064dd571a1409236d17aa2ef3",
+    "testfunc": "TestExitDuringWaitForLive",
+    "workdir": "./pkg/envoy",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "echo 'replace bitbucket.org/ww/goautoneg => github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822' >> go.mod"
+    ],
+    "build_commands": [
+      "go test ./pkg/envoy -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/istio.io/istio || true",
+      "go test ./pkg/envoy -c -o /go/gobench.test"
+    ]
+  },
+  "istio_18454": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "318d2ba92ce81e12e8da0d1e896d2367c5a30cd3",
+    "testfunc": "TestProcessor_Publishing",
+    "workdir": "./galley/pkg/runtime",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./galley/pkg/runtime -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/istio.io/istio -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/istio.io/istio || true",
+      "go test ./galley/pkg/runtime -c -o /go/gobench.test"
+    ]
+  },
+  "kubernetes_11298": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Condition Variable",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "f5e6161e499b913f869204085d89f6a131f500bd",
+    "testfunc": "^Test$",
+    "workdir": "./contrib/mesos/pkg/election",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '158 igo test ./contrib/mesos/pkg/election -c -o /go/gobench.test' hack/test-go.sh",
+      "sed -i '159 iexit 0' hack/test-go.sh",
+      "sed -i '232,241d' hack/lib/golang.sh"
+    ],
+    "build_commands": [
+      "make test WHAT=./contrib/mesos/pkg/election"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "git clone https://github.com/sasha-s/go-deadlock.git Godeps/_workspace/src/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/petermattis/goid.git Godeps/_workspace/src/github.com/petermattis/goid",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/github.com/GoogleCloudPlatform/kubernetes/pkg/util/time.go",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/github.com/GoogleCloudPlatform/kubernetes/pkg/util/util.go",
+      "make test WHAT=./contrib/mesos/pkg/election"
+    ]
+  },
+  "kubernetes_1321": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "9c25792dca98c8ae798a2c0763c1a08934fe567c",
+    "testfunc": "TestMuxWatcherStopDeadlock",
+    "workdir": "./pkg/watch",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '147 igo test \"\\${pkg}\" -c -o /go/gobench.test' hack/test-go.sh",
+      "sed -i '148 iexit 0' hack/test-go.sh",
+      "sed -i '130,135d' hack/config-go.sh"
+    ],
+    "build_commands": [
+      "make test WHAT=./pkg/watch"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "git clone https://github.com/sasha-s/go-deadlock.git Godeps/_workspace/src/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/petermattis/goid.git Godeps/_workspace/src/github.com/petermattis/goid",
+      "make test WHAT=./pkg/watch"
+    ]
+  },
+  "kubernetes_16851": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "919d2c11260f762a27c8918ea8375aa4a7dc873c",
+    "testfunc": "TestPlugin_LifeCycle",
+    "workdir": "./contrib/mesos/pkg/scheduler",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '235,251d' hack/lib/golang.sh",
+      "sed -i '232 igo test ./contrib/mesos/pkg/scheduler -c -o /go/gobench.test' hack/test-go.sh",
+      "sed -i '233 iexit 0' hack/test-go.sh",
+      "sed -i '809d' contrib/mesos/pkg/scheduler/plugin.go",
+      "sed -i '464d' contrib/mesos/pkg/scheduler/scheduler.go"
+    ],
+    "build_commands": [
+      "make test WHAT=./contrib/mesos/pkg/scheduler"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "git clone https://github.com/sasha-s/go-deadlock.git Godeps/_workspace/src/github.com/sasha-s/go-deadlock",
+      "git clone https://github.com/petermattis/goid.git Godeps/_workspace/src/github.com/petermattis/goid",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/api/unversioned/time.go",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/util/util.go",
+      "make test WHAT=./contrib/mesos/pkg/scheduler"
+    ]
+  },
+  "kubernetes_25331": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context",
+    "goversion": "1.10",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "8a81000b71ddb319ee47185194dccb196dec64bf",
+    "testfunc": "TestWatchErrResultNotBlockAfterCancel",
+    "workdir": "./pkg/storage/etcd3",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '54s/%v\\\")/%v\\\", ep)/' ./pkg/storage/etcd3/compact.go"
+    ],
+    "build_commands": [
+      "go test ./pkg/storage/etcd3 -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "go test ./pkg/storage/etcd3 -c -o /go/gobench.test"
+    ]
+  },
+  "kubernetes_26980": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.12",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "628af356b8c83f98ee3b50dfcf8b0250816a5581",
+    "testfunc": "TestPopReleaseLock",
+    "workdir": "./pkg/controller/framework",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/controller/framework -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "go test ./pkg/controller/framework -c -o /go/gobench.test"
+    ]
+  },
+  "kubernetes_30872": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA Deadlock",
+    "goversion": "1.12",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "b15c2d67e672897fc1b30dd879d8f4c6065181a5",
+    "testfunc": "TestNamespaceController",
+    "workdir": "./federation/pkg/federation-controller/namespace",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./federation/pkg/federation-controller/namespace -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "go test ./federation/pkg/federation-controller/namespace -c -o /go/gobench.test"
+    ]
+  },
+  "kubernetes_38669": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.12",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "f02c8e47bc41e76594aec1b4db80900e9a2a9a15",
+    "testfunc": "TestCacheWatcherCleanupNotBlockedByResult",
+    "workdir": "./pkg/storage",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '169s/a)/a\\.\\.\\.)/' pkg/storage/errors.go"
+    ],
+    "build_commands": [
+      "go test ./pkg/storage/ -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "mv pkg/storage/watch_cache_test.go /tmp/watch_cache_test.go",
+      "mv pkg/client/clientset_generated/release_1_5/typed/core/v1/node_expansion.go /tmp/node_expansion.go",
+      "mv pkg/client/clientset_generated/release_1_5/typed/core/v1/event_expansion.go /tmp/event_expansion.go",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "mv /tmp/watch_cache_test.go pkg/storage/watch_cache_test.go",
+      "mv /tmp/node_expansion.go pkg/client/clientset_generated/release_1_5/typed/core/v1/node_expansion.go",
+      "mv /tmp/event_expansion.go pkg/client/clientset_generated/release_1_5/typed/core/v1/event_expansion.go",
+      "go test ./pkg/storage/ -c -o /go/gobench.test"
+    ]
+  },
+  "kubernetes_70277": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.12",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "81a1f12dab66688568fc75d1dd84f769f433e2ee",
+    "testfunc": "TestWaitForClosesStopCh",
+    "workdir": "../apimachinery/pkg/util/wait",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "cp -r ./vendor/* /go/src/",
+      "rm -rf /go/src/k8s.io/apimachinery",
+      "cp -r ./staging/src/k8s.io/apimachinery /go/src/k8s.io/"
+    ],
+    "build_commands": [
+      "go test ../apimachinery/pkg/util/wait -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
+      "go test ../apimachinery/pkg/util/wait -c -o /go/gobench.test"
+    ]
+  },
+  "moby_29733": {
+    "type": "Communication Deadlock",
+    "subtype": "Condition Variable",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/moby/moby",
+    "src_path": "github.com/moby/moby",
+    "pull_sha": "48ed4f0639d2f290603a04ec146beb3f9569280f",
+    "testenvs": [
+      "TESTFLAGS=./pkg/plugins"
+    ],
+    "testfunc": "TestPluginAddHandler",
+    "workdir": ".",
+    "pred_stage_build_command": "make test-unit",
+    "pred_commands": [
+      "sed -i '68s/--rm//' Makefile",
+      "sed -i '68s/MOUNT)/MOUNT) -v \\/go\\/test:\\/go\\/test --name moby_29733_cntr/' Makefile",
+      "sed -i '52s/-cover//' hack/make/test-unit",
+      "sed -i '52s/go test.*/\u0026\\n\\t\u0026/' hack/make/test-unit",
+      "sed -i '52s/$/ -i/' hack/make/test-unit",
+      "sed -i '53s/\\$pkg_list//' hack/make/test-unit",
+      "sed -i '53s/$/ -c -o \\/go\\/gobench.test/' hack/make/test-unit"
+    ],
+    "build_commands": [],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/moby/moby -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/moby/moby -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/moby/moby || true",
+      "sed -i '51s/^/go get -v github.com\\/sasha-s\\/go-deadlock/' hack/make/test-unit"
+    ]
+  },
+  "moby_30408": {
+    "type": "Communication Deadlock",
+    "subtype": "Condition Variable",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/moby/moby",
+    "src_path": "github.com/moby/moby",
+    "pull_sha": "113e9f07f49e9089df41585aeb355697b4c96120",
+    "testenvs": [
+      "TESTFLAGS=./pkg/plugins"
+    ],
+    "testfunc": "TestPluginWaitBadPlugin",
+    "workdir": ".",
+    "pred_stage_build_command": "make test-unit",
+    "pred_commands": [
+      "sed -i '68s/--rm//' Makefile",
+      "sed -i '68s/MOUNT)/MOUNT) -v \\/go\\/test:\\/go\\/test --name moby_30408_cntr/' Makefile",
+      "sed -i '52s/-cover//' hack/make/test-unit",
+      "sed -i '52s/go test.*/\u0026\\n\\t\u0026/' hack/make/test-unit",
+      "sed -i '52s/$/ -i/' hack/make/test-unit",
+      "sed -i '53s/\\$pkg_list//' hack/make/test-unit",
+      "sed -i '53s/$/ -c -o \\/go\\/gobench.test/' hack/make/test-unit"
+    ],
+    "build_commands": [],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/moby/moby -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/moby/moby -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/moby/moby || true",
+      "sed -i '51s/^/go get -v github.com\\/sasha-s\\/go-deadlock/' hack/make/test-unit"
+    ]
+  },
+  "serving_2137": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "github.com/knative/serving",
+    "pull_sha": "556be431796e17044350fb47767e23ba9e2b1566",
+    "testfunc": "TestBreakerRecover",
+    "workdir": "/go/src/github.com/knative/serving/pkg/queue",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/queue -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/knative/serving -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/knative/serving -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/knative/serving || true",
+      "go test ./pkg/queue -c -o /go/gobench.test"
+    ]
+  },
+  "syncthing_4829": {
+    "type": "Resource Deadlock",
+    "subtype": "Double Locking",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/syncthing/syncthing",
+    "src_path": "github.com/syncthing/syncthing",
+    "pull_sha": "e7dc2f91900c9394529190de921c96b3b2d4eb44",
+    "testfunc": "TestMappingClearAddresses",
+    "workdir": "./lib/nat",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./lib/nat -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "syncthing_5795": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/syncthing/syncthing",
+    "src_path": "github.com/syncthing/syncthing",
+    "pull_sha": "02752af86233849746c638f3e8cbbd78cce46878",
+    "testfunc": "TestDispatcherToCloseDeadlock",
+    "workdir": "./lib/protocol",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./lib/protocol -c -o /go/gobench.test"
+    ],
+    "post_commands": [
+      "go get -v github.com/sasha-s/go-deadlock",
+      "go get -v golang.org/x/tools/cmd/goimports",
+      "find /go/src/github.com/syncthing/syncthing -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
+      "find /go/src/github.com/syncthing/syncthing -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
+      "/go/bin/goimports -w /go/src/github.com/syncthing/syncthing || true",
+      "go test ./lib/protocol -c -o /go/gobench.test"
+    ]
+  }
+}

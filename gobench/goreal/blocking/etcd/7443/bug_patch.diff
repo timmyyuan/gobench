@@ -1,0 +1,187 @@
+diff --git a/clientv3/balancer.go b/clientv3/balancer.go
+index ab11e4ad6..87137d4d5 100644
+--- a/clientv3/balancer.go
++++ b/clientv3/balancer.go
+@@ -47,15 +47,6 @@ type simpleBalancer struct {
+ 	// upc closes when upEps transitions from empty to non-zero or the balancer closes.
+ 	upc chan struct{}
+ 
+-	// downc closes when grpc calls down() on pinAddr
+-	downc chan struct{}
+-
+-	// stopc is closed to signal updateNotifyLoop should stop.
+-	stopc chan struct{}
+-
+-	// donec closes when all goroutines are exited
+-	donec chan struct{}
+-
+ 	// grpc issues TLS cert checks using the string passed into dial so
+ 	// that string must be the host. To recover the full scheme://host URL,
+ 	// have a map from hosts to the original endpoint.
+@@ -80,12 +71,8 @@ func newSimpleBalancer(eps []string) *simpleBalancer {
+ 		notifyCh: notifyCh,
+ 		readyc:   make(chan struct{}),
+ 		upc:      make(chan struct{}),
+-		stopc:    make(chan struct{}),
+-		downc:    make(chan struct{}),
+-		donec:    make(chan struct{}),
+ 		host2ep:  getHost2ep(eps),
+ 	}
+-	go sb.updateNotifyLoop()
+ 	return sb
+ }
+ 
+@@ -144,50 +131,6 @@ func (b *simpleBalancer) updateAddrs(eps []string) {
+ 	}
+ }
+ 
+-func (b *simpleBalancer) updateNotifyLoop() {
+-	defer close(b.donec)
+-
+-	for {
+-		b.mu.RLock()
+-		upc := b.upc
+-		b.mu.RUnlock()
+-		var downc chan struct{}
+-		select {
+-		case <-upc:
+-			var addr string
+-			b.mu.RLock()
+-			addr = b.pinAddr
+-			// Up() sets pinAddr and downc as a pair under b.mu
+-			downc = b.downc
+-			b.mu.RUnlock()
+-			if addr == "" {
+-				break
+-			}
+-			// close opened connections that are not pinAddr
+-			// this ensures only one connection is open per client
+-			select {
+-			case b.notifyCh <- []grpc.Address{{Addr: addr}}:
+-			case <-b.stopc:
+-				return
+-			}
+-		}
+-		select {
+-		case <-downc:
+-			b.mu.RLock()
+-			addrs := b.addrs
+-			b.mu.RUnlock()
+-			select {
+-			case b.notifyCh <- addrs:
+-			case <-b.stopc:
+-				return
+-			}
+-		case <-b.stopc:
+-			return
+-		}
+-
+-	}
+-}
+-
+ func (b *simpleBalancer) Up(addr grpc.Address) func(error) {
+ 	b.mu.Lock()
+ 	defer b.mu.Unlock()
+@@ -202,18 +145,20 @@ func (b *simpleBalancer) Up(addr grpc.Address) func(error) {
+ 	if b.pinAddr == "" {
+ 		// notify waiting Get()s and pin first connected address
+ 		close(b.upc)
+-		b.downc = make(chan struct{})
+ 		b.pinAddr = addr.Addr
+ 		// notify client that a connection is up
+ 		b.readyOnce.Do(func() { close(b.readyc) })
++		// close opened connections that are not pinAddr
++		// this ensures only one connection is open per client
++		b.notifyCh <- []grpc.Address{addr}
+ 	}
+ 
+ 	return func(err error) {
+ 		b.mu.Lock()
+ 		if b.pinAddr == addr.Addr {
+ 			b.upc = make(chan struct{})
+-			close(b.downc)
+ 			b.pinAddr = ""
++			b.notifyCh <- b.addrs
+ 		}
+ 		b.mu.Unlock()
+ 	}
+@@ -269,15 +214,14 @@ func (b *simpleBalancer) Notify() <-chan []grpc.Address { return b.notifyCh }
+ 
+ func (b *simpleBalancer) Close() error {
+ 	b.mu.Lock()
++	defer b.mu.Unlock()
+ 	// In case gRPC calls close twice. TODO: remove the checking
+ 	// when we are sure that gRPC wont call close twice.
+ 	if b.closed {
+-		b.mu.Unlock()
+-		<-b.donec
+ 		return nil
+ 	}
+ 	b.closed = true
+-	close(b.stopc)
++	close(b.notifyCh)
+ 	b.pinAddr = ""
+ 
+ 	// In the case of following scenario:
+@@ -292,13 +236,6 @@ func (b *simpleBalancer) Close() error {
+ 		// terminate all waiting Get()s
+ 		close(b.upc)
+ 	}
+-
+-	b.mu.Unlock()
+-
+-	// wait for updateNotifyLoop to finish
+-	<-b.donec
+-	close(b.notifyCh)
+-
+ 	return nil
+ }
+ 
+diff --git a/clientv3/balancer_test.go b/clientv3/balancer_test.go
+index 79e214028..5009d94eb 100644
+--- a/clientv3/balancer_test.go
++++ b/clientv3/balancer_test.go
+@@ -16,14 +16,13 @@ package clientv3
+ 
+ import (
+ 	"errors"
+ 	"net"
+ 	"sync"
+ 	"testing"
+ 	"time"
+ 
+ 	pb "github.com/coreos/etcd/etcdserver/etcdserverpb"
+ 	"github.com/coreos/etcd/pkg/testutil"
+-
+ 	"golang.org/x/net/context"
+ 	"google.golang.org/grpc"
+ )
+@@ -34,7 +29,6 @@ var (
+ 
+ func TestBalancerGetUnblocking(t *testing.T) {
+ 	sb := newSimpleBalancer(endpoints)
+-	defer sb.Close()
+ 	if addrs := <-sb.Notify(); len(addrs) != len(endpoints) {
+ 		t.Errorf("Initialize newSimpleBalancer should have triggered Notify() chan, but it didn't")
+ 	}
+@@ -78,7 +72,6 @@ func TestBalancerGetUnblocking(t *testing.T) {
+ 
+ func TestBalancerGetBlocking(t *testing.T) {
+ 	sb := newSimpleBalancer(endpoints)
+-	defer sb.Close()
+ 	if addrs := <-sb.Notify(); len(addrs) != len(endpoints) {
+ 		t.Errorf("Initialize newSimpleBalancer should have triggered Notify() chan, but it didn't")
+ 	}
+@@ -95,11 +88,10 @@ func TestBalancerGetBlocking(t *testing.T) {
+ 	go func() {
+ 		// ensure sb.Up() will be called after sb.Get() to see if Up() releases blocking Get()
+ 		time.Sleep(time.Millisecond * 100)
+-		f := sb.Up(grpc.Address{Addr: endpoints[1]})
++		downC <- sb.Up(grpc.Address{Addr: endpoints[1]})
+ 		if addrs := <-sb.Notify(); len(addrs) != 1 {
+ 			t.Errorf("first Up() should have triggered balancer to send the first connected address via Notify chan so that other connections can be closed")
+ 		}
+-		downC <- f
+ 	}()
+ 	addrFirst, putFun, err := sb.Get(context.Background(), blockingOpts)
+ 	if err != nil {

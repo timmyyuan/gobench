@@ -1,0 +1,26 @@
+diff --git a/transport/http2_client.go b/transport/http2_client.go
+index 56b434ef..717e4192 100644
+--- a/transport/http2_client.go
++++ b/transport/http2_client.go
+@@ -716,8 +716,6 @@ func (t *http2Client) Write(s *Stream, hdr []byte, data []byte, opts *Options) e
+ 			}
+ 			ltq, _, err := t.localSendQuota.get(size, s.waiters)
+ 			if err != nil {
+-				// Add the acquired quota back to transport.
+-				t.sendQuotaPool.add(tq)
+ 				return err
+ 			}
+ 			// even if ltq is smaller than size we don't adjust size since
+diff --git a/transport/http2_server.go b/transport/http2_server.go
+index 24c2c7e1..5233d6f3 100644
+--- a/transport/http2_server.go
++++ b/transport/http2_server.go
+@@ -888,8 +888,6 @@ func (t *http2Server) Write(s *Stream, hdr []byte, data []byte, opts *Options) e
+ 			}
+ 			ltq, _, err := t.localSendQuota.get(size, s.waiters)
+ 			if err != nil {
+-				// Add the acquired quota back to transport.
+-				t.sendQuotaPool.add(tq)
+ 				return err
+ 			}
+ 			// even if ltq is smaller than size we don't adjust size since,

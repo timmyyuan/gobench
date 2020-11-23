@@ -1,0 +1,69 @@
+diff --git a/pkg/controller/framework/processor_listener_test.go b/pkg/controller/framework/processor_listener_test.go
+index ffd72d8fae2..db230666ccb 100644
+--- a/pkg/controller/framework/processor_listener_test.go
++++ b/pkg/controller/framework/processor_listener_test.go
+@@ -17,6 +17,8 @@ limitations under the License.
+ package framework
+ 
+ import (
++	"fmt"
++	"runtime/debug"
+ 	"testing"
+ 	"time"
+ 
+@@ -42,7 +44,8 @@ func TestPopReleaseLock(t *testing.T) {
+ 	select {
+ 	case <-resultCh:
+ 	case <-time.After(wait.ForeverTestTimeout):
+-		t.Errorf("Timeout after %v", wait.ForeverTestTimeout)
++		debug.SetTraceback("all")
++		panic(fmt.Sprintf("Timeout after %v", wait.ForeverTestTimeout))
+ 	}
+ 	pl.lock.Unlock()
+ }
+diff --git a/pkg/controller/framework/shared_informer.go b/pkg/controller/framework/shared_informer.go
+index c557bf97548..ce9ddf2c714 100644
+--- a/pkg/controller/framework/shared_informer.go
++++ b/pkg/controller/framework/shared_informer.go
+@@ -279,30 +279,21 @@ func (p *processorListener) add(notification interface{}) {
+ func (p *processorListener) pop(stopCh <-chan struct{}) {
+ 	defer utilruntime.HandleCrash()
+ 
++	p.lock.Lock()
++	defer p.lock.Unlock()
+ 	for {
+-		blockingGet := func() (interface{}, bool) {
+-			p.lock.Lock()
+-			defer p.lock.Unlock()
+-
+-			for len(p.pendingNotifications) == 0 {
+-				// check if we're shutdown
+-				select {
+-				case <-stopCh:
+-					return nil, true
+-				default:
+-				}
+-				p.cond.Wait()
++		for len(p.pendingNotifications) == 0 {
++			// check if we're shutdown
++			select {
++			case <-stopCh:
++				return
++			default:
+ 			}
+ 
+-			nt := p.pendingNotifications[0]
+-			p.pendingNotifications = p.pendingNotifications[1:]
+-			return nt, false
+-		}
+-
+-		notification, stopped := blockingGet()
+-		if stopped {
+-			return
++			p.cond.Wait()
+ 		}
++		notification := p.pendingNotifications[0]
++		p.pendingNotifications = p.pendingNotifications[1:]
+ 
+ 		select {
+ 		case <-stopCh:

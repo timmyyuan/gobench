@@ -1,0 +1,30 @@
+diff --git a/pkg/storage/gossip_test.go b/pkg/storage/gossip_test.go
+index 6e7487bd87..318cf5aadf 100644
+--- a/pkg/storage/gossip_test.go
++++ b/pkg/storage/gossip_test.go
+@@ -41,22 +41,15 @@ func TestGossipFirstRange(t *testing.T) {
+ 		})
+ 	defer tc.Stopper().Stop(context.TODO())
+ 
+-	errors := make(chan error, 1)
++	errors := make(chan error)
+ 	descs := make(chan *roachpb.RangeDescriptor)
+ 	unregister := tc.Servers[0].Gossip().RegisterCallback(gossip.KeyFirstRangeDescriptor,
+ 		func(_ string, content roachpb.Value) {
+ 			var desc roachpb.RangeDescriptor
+ 			if err := content.GetProto(&desc); err != nil {
+-				select {
+-				case errors <- err:
+-				default:
+-				}
++				errors <- err
+ 			} else {
+-				select {
+-				case descs <- &desc:
+-				case <-time.After(45 * time.Second):
+-					t.Logf("had to drop descriptor %+v", desc)
+-				}
++				descs <- &desc
+ 			}
+ 		},
+ 		// Redundant callbacks are required by this test.

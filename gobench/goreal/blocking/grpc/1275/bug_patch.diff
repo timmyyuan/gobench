@@ -1,0 +1,60 @@
+diff --git a/transport/http2_client.go b/transport/http2_client.go
+index 6874a10a..54dfd7ed 100644
+--- a/transport/http2_client.go
++++ b/transport/http2_client.go
+@@ -551,10 +551,6 @@ func (t *http2Client) CloseStream(s *Stream, err error) {
+ 		t.mu.Unlock()
+ 		return
+ 	}
+-	if err != nil {
+-		// notify in-flight streams, before the deletion
+-		s.write(recvMsg{err: err})
+-	}
+ 	delete(t.activeStreams, s.id)
+ 	if t.state == draining && len(t.activeStreams) == 0 {
+ 		// The transport is draining and s is the last live stream on t.
+diff --git a/transport/transport_test.go b/transport/transport_test.go
+index ec3f75c0..16582901 100644
+--- a/transport/transport_test.go
++++ b/transport/transport_test.go
+@@ -24,23 +24,23 @@ import (
+ 	"encoding/binary"
+ 	"errors"
+ 	"fmt"
++	"golang.org/x/net/context"
++	"golang.org/x/net/http2"
++	"golang.org/x/net/http2/hpack"
++	"google.golang.org/grpc/codes"
++	"google.golang.org/grpc/keepalive"
++	"google.golang.org/grpc/status"
+ 	"io"
+ 	"math"
+ 	"net"
+ 	"net/http"
+ 	"reflect"
++	"runtime/debug"
+ 	"strconv"
+ 	"strings"
+ 	"sync"
+ 	"testing"
+ 	"time"
+-
+-	"golang.org/x/net/context"
+-	"golang.org/x/net/http2"
+-	"golang.org/x/net/http2/hpack"
+-	"google.golang.org/grpc/codes"
+-	"google.golang.org/grpc/keepalive"
+-	"google.golang.org/grpc/status"
+ )
+ 
+ type server struct {
+@@ -415,7 +415,8 @@ func TestInflightStreamClosing(t *testing.T) {
+ 			<-timeout.C
+ 		}
+ 	case <-timeout.C:
+-		t.Fatalf("Test timed out, expected a StreamError.")
++		debug.SetTraceback("all")
++		panic("Test timed out, expected a StreamError.")
+ 	}
+ }
+ 

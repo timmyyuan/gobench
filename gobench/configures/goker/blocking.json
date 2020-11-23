@@ -1,0 +1,274 @@
+{
+  "hugo_5379": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "grpc_3017": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "grpc_795": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "etcd_10492": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "etcd_6708": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "etcd_5509": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "cockroach_9935": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "cockroach_584": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "syncthing_4829": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "moby_36114": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "moby_17176": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "moby_7559": {
+    "type": "Resource Deadlock",
+    "subtype": "Double locking"
+  },
+  "cockroach_10214": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "cockroach_7504": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "kubernetes_30872": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "kubernetes_13135": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "moby_4951": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "hugo_3251": {
+    "type": "Resource Deadlock",
+    "subtype": "AB-BA deadlock"
+  },
+  "cockroach_16167": {
+    "type": "Resource Deadlock",
+    "subtype": "RWR deadlock"
+  },
+  "cockroach_6181": {
+    "type": "Resource Deadlock",
+    "subtype": "RWR deadlock"
+  },
+  "cockroach_3710": {
+    "type": "Resource Deadlock",
+    "subtype": "RWR deadlock"
+  },
+  "kubernetes_62464": {
+    "type": "Resource Deadlock",
+    "subtype": "RWR deadlock"
+  },
+  "kubernetes_58107": {
+    "type": "Resource Deadlock",
+    "subtype": "RWR deadlock"
+  },
+  "grpc_1275": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "grpc_1424": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "grpc_660": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "etcd_6857": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "istio_17860": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "syncthing_5795": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "cockroach_35931": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "cockroach_35073": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "cockroach_25456": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "cockroach_24808": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "cockroach_2448": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "kubernetes_70277": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "kubernetes_38669": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "kubernetes_5316": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "moby_33293": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "moby_21233": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "moby_4395": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel"
+  },
+  "grpc_862": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "istio_18454": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "cockroach_18101": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "cockroach_13755": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "cockroach_13197": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "cockroach_10790": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "kubernetes_25331": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "moby_33781": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Context"
+  },
+  "kubernetes_11298": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Condition Variable"
+  },
+  "moby_27782": {
+    "type": "Communication Deadlock",
+    "subtype": "Channel & Condition Variable"
+  },
+  "moby_30408": {
+    "type": "Communication Deadlock",
+    "subtype": "Condition Variable"
+  },
+  "moby_29733": {
+    "type": "Communication Deadlock",
+    "subtype": "Condition Variable"
+  },
+  "grpc_1460": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "grpc_1353": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "etcd_7902": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "etcd_7492": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "etcd_7443": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "etcd_6873": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "istio_16224": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "serving_2137": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "kubernetes_26980": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "kubernetes_10182": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "kubernetes_6632": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "kubernetes_1321": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "moby_28462": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & Lock"
+  },
+  "cockroach_1462": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & WaitGroup"
+  },
+  "cockroach_1055": {
+    "type": "Mixed Deadlock",
+    "subtype": "Channel & WaitGroup"
+  },
+  "moby_25384": {
+    "type": "Mixed Deadlock",
+    "subtype": "Misuse WaitGroup"
+  }
+}

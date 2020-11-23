@@ -1,0 +1,280 @@
+<div align="center"> <h1>GoBench Artifact Evaluation </h1> </div>
+<div align="center"> <h2>Table IV. Blocking bugs reported in GoBench ("Pre" stands for precision and "Rec" stands for recall). </h2> </div>
+<div> </div>
+
+<style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-8bgf{border-color:inherit;font-style:italic;text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg" align="center">
+    <thead>
+    <tr>
+        <th class="tg-c3ow" rowspan="2">Suite</th>
+        <th class="tg-c3ow" rowspan="2">Bug type</th>
+        <th class="tg-8bgf" colspan="5">goleak</th>
+        <th class="tg-8bgf" colspan="5">go-deadlock</th>
+        <th class="tg-8bgf" colspan="5">dingo-hunter</th>
+    </tr>
+    <tr>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="tg-c3ow" rowspan="4">GoReal</td>
+        <td class="tg-0pky">Resource deadlock</td>
+        <td class="tg-c3ow">1</td>
+        <td class="tg-c3ow">6</td>
+        <td class="tg-c3ow">2</td>
+        <td class="tg-c3ow">33.3</td>
+        <td class="tg-c3ow">12.5</td>
+        <td class="tg-c3ow">7</td>
+        <td class="tg-c3ow">2</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">350.0</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Communication deadlock</td>
+        <td class="tg-c3ow">11</td>
+        <td class="tg-c3ow">5</td>
+        <td class="tg-c3ow">5</td>
+        <td class="tg-c3ow">68.8</td>
+        <td class="tg-c3ow">110.0</td>
+        <td class="tg-c3ow">1</td>
+        <td class="tg-c3ow">16</td>
+        <td class="tg-c3ow">4</td>
+        <td class="tg-c3ow">20.0</td>
+        <td class="tg-c3ow">5.0</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Mixed deadlock</td>
+        <td class="tg-c3ow">3</td>
+        <td class="tg-c3ow">2</td>
+        <td class="tg-c3ow">5</td>
+        <td class="tg-c3ow">37.5</td>
+        <td class="tg-c3ow">42.9</td>
+        <td class="tg-c3ow">3</td>
+        <td class="tg-c3ow">4</td>
+        <td class="tg-c3ow">3</td>
+        <td class="tg-c3ow">50.0</td>
+        <td class="tg-c3ow">42.9</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        <td class="tg-c3ow">15</td>
+        <td class="tg-c3ow">13</td>
+        <td class="tg-c3ow">12</td>
+        <td class="tg-c3ow">55.6</td>
+        <td class="tg-c3ow">60.0</td>
+        <td class="tg-c3ow">11</td>
+        <td class="tg-c3ow">22</td>
+        <td class="tg-c3ow">7</td>
+        <td class="tg-c3ow">61.1</td>
+        <td class="tg-c3ow">37.9</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">-</td>
+    </tr>
+    <tr>
+        <td class="tg-c3ow" rowspan="4">GoKer</td>
+        <td class="tg-0pky">Resource deadlock</td>
+        <td class="tg-c3ow">14</td>
+        <td class="tg-c3ow">9</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">155.6</td>
+        <td class="tg-c3ow">22</td>
+        <td class="tg-c3ow">1</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">2200.0</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">23</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">0</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Communication deadlock</td>
+        <td class="tg-c3ow">20</td>
+        <td class="tg-c3ow">9</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">222.2</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">29</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">1</td>
+        <td class="tg-c3ow">28</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">3.6</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Mixed deadlock</td>
+        <td class="tg-c3ow">10</td>
+        <td class="tg-c3ow">6</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">166.7</td>
+        <td class="tg-c3ow">6</td>
+        <td class="tg-c3ow">10</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">60.0</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">16</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">-</td>
+        <td class="tg-c3ow">0</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        <td class="tg-c3ow">44</td>
+        <td class="tg-c3ow">24</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">183.3</td>
+        <td class="tg-c3ow">28</td>
+        <td class="tg-c3ow">40</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">70.0</td>
+        <td class="tg-c3ow">1</td>
+        <td class="tg-c3ow">67</td>
+        <td class="tg-c3ow">0</td>
+        <td class="tg-c3ow">100.0</td>
+        <td class="tg-c3ow">1.5</td>
+    </tr>
+    </tbody>
+</table>
+
+<div align="center"> <h2> Table V. Non-blocking bugs reported in GoBench. </h2> </div>
+
+<style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-sx07{border-color:#000000;font-style:italic;text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    .tg .tg-wp8o{border-color:#000000;text-align:center;vertical-align:top}
+    .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg" align="center">
+    <thead>
+    <tr>
+        <th class="tg-c3ow" rowspan="2">Suite</th>
+        <th class="tg-c3ow" rowspan="2">Bug type</th>
+        <th class="tg-sx07" colspan="5">Go-rd</th>
+    </tr>
+    <tr>
+        <td class="tg-wp8o">#TP</td>
+        <td class="tg-wp8o">#FN</td>
+        <td class="tg-wp8o">#FP</td>
+        <td class="tg-wp8o">Pre (%)</td>
+        <td class="tg-wp8o">Rec (%)</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="tg-c3ow" rowspan="3">GoReal</td>
+        <td class="tg-0pky">Traditional<br></td>
+        <td class="tg-wp8o">7</td>
+        <td class="tg-wp8o">2</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">350.0</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Go-Specific<br></td>
+        <td class="tg-wp8o">9</td>
+        <td class="tg-wp8o">12</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">75.0</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        <td class="tg-wp8o">22</td>
+        <td class="tg-wp8o">18</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">122.2</td>
+    </tr>
+    <tr>
+        <td class="tg-c3ow" rowspan="3">GoKer</td>
+        <td class="tg-0pky">Traditional</td>
+        <td class="tg-wp8o">12</td>
+        <td class="tg-wp8o">11</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">109.1</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Go-Specific<br></td>
+        <td class="tg-wp8o">12</td>
+        <td class="tg-wp8o">17</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">70.6</td>
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        <td class="tg-wp8o">33</td>
+        <td class="tg-wp8o">35</td>
+        <td class="tg-wp8o">0</td>
+        <td class="tg-wp8o">100.0</td>
+        <td class="tg-wp8o">94.3</td>
+    </tr>
+    </tbody>
+</table>
+
+<div align="center">
+    <h2> Fig.10 Percentage distribution for the (average) number of runs falling
+        into each of the four given intervals that is needed by a tool in finding a bug </h2> </div>
+<p align="center">
+    <img src="./result/fig10.goreal.png" />
+    <img src="./result/fig10.goker.png" />
+</p>

@@ -1,0 +1,54 @@
+diff --git a/pkg/activator/revision_backends.go b/pkg/activator/revision_backends.go
+index af0ac2401..95b9822af 100644
+--- a/pkg/activator/revision_backends.go
++++ b/pkg/activator/revision_backends.go
+@@ -11,7 +11,6 @@ import (
+ 	"time"
+ 
+ 	"go.uber.org/zap"
+-	"golang.org/x/sync/errgroup"
+ 	corev1 "k8s.io/api/core/v1"
+ 	corev1informers "k8s.io/client-go/informers/core/v1"
+ 	"k8s.io/client-go/tools/cache"
+@@ -112,8 +111,6 @@ func (rw *revisionWatcher) checkDests() {
+ 	ctx, cancel := context.WithTimeout(context.Background(), probeTimeout)
+ 	defer cancel()
+ 
+-	var probeGroup errgroup.Group
+-
+ 	for _, dest := range rw.dests {
+ 		// If the dest is already healthy then save this
+ 		if curHealthy, ok := rw.healthStates[dest]; ok && curHealthy {
+@@ -121,22 +118,23 @@ func (rw *revisionWatcher) checkDests() {
+ 			continue
+ 		}
+ 
+-		pDest := dest
+-		probeGroup.Go(func() error {
++		go func(dest string) {
+ 			httpDest := url.URL{
+ 				Scheme: "http",
+-				Host:   pDest,
++				Host:   dest,
+ 			}
+ 			ok, err := prober.Do(ctx, rw.transport, httpDest.String(),
+ 				prober.WithHeader(network.ProbeHeaderName, queue.Name),
+ 				prober.ExpectsBody(queue.Name))
+-			healthStatesCh <- &destHealth{pDest, ok}
+-			return err
+-		})
+-	}
+ 
+-	if err := probeGroup.Wait(); err != nil {
+-		rw.logger.Errorw("Failed probing", zap.Error(err))
++			healthStatesCh <- &destHealth{dest, ok}
++
++			if err != nil {
++				rw.logger.Errorw("Failed probing "+dest, zap.Error(err))
++			} else if !ok {
++				rw.logger.Info("Probing of dest " + dest)
++			}
++		}(dest)
+ 	}
+ 
+ 	healthStates := make(map[string]bool, len(rw.dests))

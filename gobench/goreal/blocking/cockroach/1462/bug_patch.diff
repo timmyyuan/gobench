@@ -1,0 +1,68 @@
+diff --git a/multiraft/transport_test.go b/multiraft/transport_test.go
+index ab69a7a69b..12d8dae2f0 100644
+--- a/multiraft/transport_test.go
++++ b/multiraft/transport_test.go
+@@ -53,9 +53,27 @@ func (lt *localInterceptableTransport) start() {
+ 		for {
+ 			select {
+ 			case msg := <-lt.messages:
+-				if lt.stopper.StartTask() {
+-					lt.handleMessage(msg)
+-					lt.stopper.FinishTask()
++				ack := make(chan struct{})
++				iMsg := &interceptMessage{
++					args: msg,
++					ack:  ack,
++				}
++				// The following channel ops are not protected by a select with ShouldStop
++				// since leaving things partially complete here could prevent other components
++				// from shutting down cleanly.
++				lt.Events <- iMsg
++				<-ack
++				lt.mu.Lock()
++				srv, ok := lt.listeners[proto.RaftNodeID(msg.Message.To)]
++				lt.mu.Unlock()
++				if !ok {
++					continue
++				}
++				err := srv.RaftMessage(msg, nil)
++				if err == ErrStopped {
++					return
++				} else if err != nil {
++					log.Fatal(err)
+ 				}
+ 
+ 			case <-lt.stopper.ShouldStop():
+@@ -65,32 +83,6 @@ func (lt *localInterceptableTransport) start() {
+ 	})
+ }
+ 
+-func (lt *localInterceptableTransport) handleMessage(msg *RaftMessageRequest) {
+-	ack := make(chan struct{})
+-	iMsg := &interceptMessage{
+-		args: msg,
+-		ack:  ack,
+-	}
+-	// The following channel ops are not protected by a select with
+-	// ShouldStop since we are running under a StartTask and leaving
+-	// things partially complete here could prevent other components
+-	// from shutting down cleanly.
+-	lt.Events <- iMsg
+-	<-ack
+-	lt.mu.Lock()
+-	srv, ok := lt.listeners[proto.RaftNodeID(msg.Message.To)]
+-	lt.mu.Unlock()
+-	if !ok {
+-		return
+-	}
+-	err := srv.RaftMessage(msg, nil)
+-	if err == ErrStopped {
+-		return
+-	} else if err != nil {
+-		log.Fatal(err)
+-	}
+-}
+-
+ func (lt *localInterceptableTransport) Listen(id proto.RaftNodeID, server ServerInterface) error {
+ 	lt.mu.Lock()
+ 	defer lt.mu.Unlock()

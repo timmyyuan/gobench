@@ -1,0 +1,43 @@
+diff --git a/lib/protocol/protocol.go b/lib/protocol/protocol.go
+index 66dbb54c..a081ec74 100644
+--- a/lib/protocol/protocol.go
++++ b/lib/protocol/protocol.go
+@@ -882,11 +882,7 @@ func (c *rawConnection) Close(err error) {
+ 		}
+ 	})
+ 
+-	// Close might be called from a method that is called from within
+-	// dispatcherLoop, resulting in a deadlock.
+-	// The sending above must happen before spawning the routine, to prevent
+-	// the underlying connection from terminating before sending the close msg.
+-	go c.internalClose(err)
++	c.internalClose(err)
+ }
+ 
+ // internalClose is called if there is an unexpected error during normal operation.
+diff --git a/lib/protocol/protocol_test.go b/lib/protocol/protocol_test.go
+index a04c1f46..b1e547f0 100644
+--- a/lib/protocol/protocol_test.go
++++ b/lib/protocol/protocol_test.go
+@@ -8,9 +8,11 @@ import (
+ 	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
++	"fmt"
+ 	"io"
+ 	"io/ioutil"
+ 	"runtime"
++	"runtime/debug"
+ 	"sync"
+ 	"testing"
+ 	"testing/quick"
+@@ -829,6 +831,8 @@ func TestDispatcherToCloseDeadlock(t *testing.T) {
+ 	select {
+ 	case <-c.dispatcherLoopStopped:
+ 	case <-time.After(time.Second):
+-		t.Fatal("timed out before dispatcher loop terminated")
++		debug.SetTraceback("all")
++		panic(fmt.Sprintf("timed out before dispatcher loop terminated"))
++		// t.Fatal("timed out before dispatcher loop terminated")
+ 	}
+ }

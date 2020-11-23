@@ -1,0 +1,162 @@
+diff --git a/dialoptions.go b/dialoptions.go
+index 9f872df8..b7524f82 100644
+--- a/dialoptions.go
++++ b/dialoptions.go
+@@ -69,10 +69,6 @@ type dialOptions struct {
+ 	minConnectTimeout           func() time.Duration
+ 	defaultServiceConfig        *ServiceConfig // defaultServiceConfig is parsed from defaultServiceConfigRawJSON.
+ 	defaultServiceConfigRawJSON *string
+-	// This is used by ccResolverWrapper to backoff between successive calls to
+-	// resolver.ResolveNow(). The user will have no need to configure this, but
+-	// we need to be able to configure this in tests.
+-	resolveNowBackoff func(int) time.Duration
+ }
+ 
+ // DialOption configures how we set up the connection.
+@@ -563,7 +559,6 @@ func defaultDialOptions() dialOptions {
+ 			WriteBufferSize: defaultWriteBufSize,
+ 			ReadBufferSize:  defaultReadBufSize,
+ 		},
+-		resolveNowBackoff: internalbackoff.DefaultExponential.Backoff,
+ 	}
+ }
+ 
+@@ -577,13 +572,3 @@ func withMinConnectDeadline(f func() time.Duration) DialOption {
+ 		o.minConnectTimeout = f
+ 	})
+ }
+-
+-// withResolveNowBackoff specifies the function that clientconn uses to backoff
+-// between successive calls to resolver.ResolveNow().
+-//
+-// For testing purpose only.
+-func withResolveNowBackoff(f func(int) time.Duration) DialOption {
+-	return newFuncDialOption(func(o *dialOptions) {
+-		o.resolveNowBackoff = f
+-	})
+-}
+diff --git a/resolver_conn_wrapper.go b/resolver_conn_wrapper.go
+index 33198007..b4f2a571 100644
+--- a/resolver_conn_wrapper.go
++++ b/resolver_conn_wrapper.go
+@@ -24,25 +24,27 @@ import (
+ 	"sync"
+ 	"time"
+ 
++	"google.golang.org/grpc/backoff"
+ 	"google.golang.org/grpc/balancer"
+ 	"google.golang.org/grpc/grpclog"
+ 	"google.golang.org/grpc/internal/channelz"
+ 	"google.golang.org/grpc/internal/grpcsync"
+ 	"google.golang.org/grpc/resolver"
+ 	"google.golang.org/grpc/serviceconfig"
++
++	internalbackoff "google.golang.org/grpc/internal/backoff"
+ )
+ 
+ // ccResolverWrapper is a wrapper on top of cc for resolvers.
+ // It implements resolver.ClientConnection interface.
+ type ccResolverWrapper struct {
+-	cc         *ClientConn
+-	resolverMu sync.Mutex
+-	resolver   resolver.Resolver
+-	done       *grpcsync.Event
+-	curState   resolver.State
++	cc       *ClientConn
++	resolver resolver.Resolver
++	done     *grpcsync.Event
++	curState resolver.State
+ 
+-	pollingMu sync.Mutex
+-	polling   chan struct{}
++	mu      sync.Mutex // protects polling
++	polling chan struct{}
+ }
+ 
+ // split2 returns the values from strings.SplitN(s, sep, 2).
+@@ -91,39 +93,35 @@ func newCCResolverWrapper(cc *ClientConn) (*ccResolverWrapper, error) {
+ 	}
+ 
+ 	var err error
+-	// We need to hold the lock here while we assign to the ccr.resolver field
+-	// to guard against a data race caused by the following code path,
+-	// rb.Build-->ccr.ReportError-->ccr.poll-->ccr.resolveNow, would end up
+-	// accessing ccr.resolver which is being assigned here.
+-	ccr.resolverMu.Lock()
+ 	ccr.resolver, err = rb.Build(cc.parsedTarget, ccr, resolver.BuildOption{DisableServiceConfig: cc.dopts.disableServiceConfig})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	ccr.resolverMu.Unlock()
+ 	return ccr, nil
+ }
+ 
+ func (ccr *ccResolverWrapper) resolveNow(o resolver.ResolveNowOption) {
+-	ccr.resolverMu.Lock()
++	ccr.mu.Lock()
+ 	if !ccr.done.HasFired() {
+ 		ccr.resolver.ResolveNow(o)
+ 	}
+-	ccr.resolverMu.Unlock()
++	ccr.mu.Unlock()
+ }
+ 
+ func (ccr *ccResolverWrapper) close() {
+-	ccr.resolverMu.Lock()
++	ccr.mu.Lock()
+ 	ccr.resolver.Close()
+ 	ccr.done.Fire()
+-	ccr.resolverMu.Unlock()
++	ccr.mu.Unlock()
+ }
+ 
++var resolverBackoff = internalbackoff.Exponential{Config: backoff.Config{MaxDelay: 2 * time.Minute}}.Backoff
++
+ // poll begins or ends asynchronous polling of the resolver based on whether
+ // err is ErrBadResolverState.
+ func (ccr *ccResolverWrapper) poll(err error) {
+-	ccr.pollingMu.Lock()
+-	defer ccr.pollingMu.Unlock()
++	ccr.mu.Lock()
++	defer ccr.mu.Unlock()
+ 	if err != balancer.ErrBadResolverState {
+ 		// stop polling
+ 		if ccr.polling != nil {
+@@ -141,7 +139,7 @@ func (ccr *ccResolverWrapper) poll(err error) {
+ 	go func() {
+ 		for i := 0; ; i++ {
+ 			ccr.resolveNow(resolver.ResolveNowOption{})
+-			t := time.NewTimer(ccr.cc.dopts.resolveNowBackoff(i))
++			t := time.NewTimer(resolverBackoff(i))
+ 			select {
+ 			case <-p:
+ 				t.Stop()
+diff --git a/resolver_conn_wrapper_test.go b/resolver_conn_wrapper_test.go
+index 5f78801f..60e7d0d7 100644
+--- a/resolver_conn_wrapper_test.go
++++ b/resolver_conn_wrapper_test.go
+@@ -123,8 +122,10 @@ func (s) TestDialParseTargetUnknownScheme(t *testing.T) {
+ }
+ 
+ func testResolverErrorPolling(t *testing.T, badUpdate func(*manual.Resolver), goodUpdate func(*manual.Resolver), dopts ...DialOption) {
++	defer func(o func(int) time.Duration) { resolverBackoff = o }(resolverBackoff)
++
+ 	boIter := make(chan int)
+-	resolverBackoff := func(v int) time.Duration {
++	resolverBackoff = func(v int) time.Duration {
+ 		boIter <- v
+ 		return 0
+ 	}
+@@ -135,11 +136,7 @@ func testResolverErrorPolling(t *testing.T, badUpdate func(*manual.Resolver), go
+ 	defer func() { close(rn) }()
+ 	r.ResolveNowCallback = func(resolver.ResolveNowOption) { rn <- struct{}{} }
+ 
+-	defaultDialOptions := []DialOption{
+-		WithInsecure(),
+-		withResolveNowBackoff(resolverBackoff),
+-	}
+-	cc, err := Dial(r.Scheme()+":///test.server", append(defaultDialOptions, dopts...)...)
++	cc, err := Dial(r.Scheme()+":///test.server", append([]DialOption{WithInsecure()}, dopts...)...)
+ 	if err != nil {
+ 		t.Fatalf("Dial(_, _) = _, %v; want _, nil", err)
+ 	}

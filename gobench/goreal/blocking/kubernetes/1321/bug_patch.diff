@@ -1,0 +1,77 @@
+diff --git a/pkg/watch/mux.go b/pkg/watch/mux.go
+index 5f3bd5b7b66..300f2d48a7f 100644
+--- a/pkg/watch/mux.go
++++ b/pkg/watch/mux.go
+@@ -56,10 +56,9 @@ func (m *Mux) Watch() Interface {
+ 	id := m.nextWatcher
+ 	m.nextWatcher++
+ 	w := &muxWatcher{
+-		result:  make(chan Event),
+-		stopped: make(chan struct{}),
+-		id:      id,
+-		m:       m,
++		result: make(chan Event),
++		id:     id,
++		m:      m,
+ 	}
+ 	m.watchers[id] = w
+ 	return w
+@@ -121,22 +120,16 @@ var testHookMuxDistribute = func() {}
+ func (m *Mux) distribute(event Event) {
+ 	m.lock.Lock()
+ 	defer m.lock.Unlock()
+-	testHookMuxDistribute()
+ 	for _, w := range m.watchers {
+-		select {
+-		case w.result <- event:
+-		case <-w.stopped:
+-		}
++		w.result <- event
+ 	}
+ }
+ 
+ // muxWatcher handles a single watcher of a mux
+ type muxWatcher struct {
+-	result  chan Event
+-	stopped chan struct{}
+-	stop    sync.Once
+-	id      int64
+-	m       *Mux
++	result chan Event
++	id     int64
++	m      *Mux
+ }
+ 
+ // ResultChan returns a channel to use for waiting on events.
+@@ -146,8 +139,5 @@ func (mw *muxWatcher) ResultChan() <-chan Event {
+ 
+ // Stop stops watching and removes mw from its list.
+ func (mw *muxWatcher) Stop() {
+-	mw.stop.Do(func() {
+-		close(mw.stopped)
+-		mw.m.stopWatching(mw.id)
+-	})
++	mw.m.stopWatching(mw.id)
+ }
+diff --git a/pkg/watch/mux_test.go b/pkg/watch/mux_test.go
+index 679261fc4b2..194544676cc 100644
+--- a/pkg/watch/mux_test.go
++++ b/pkg/watch/mux_test.go
+@@ -18,6 +18,7 @@ package watch
+ 
+ import (
+ 	"reflect"
++	"runtime/debug"
+ 	"sync"
+ 	"testing"
+ 	"time"
+@@ -108,7 +109,8 @@ func TestMuxWatcherStopDeadlock(t *testing.T) {
+ 	m.Action(Added, &myType{})
+ 	select {
+ 	case <-time.After(5 * time.Second):
+-		t.Error("timeout: deadlocked")
++		debug.SetTraceback("all")
++		panic("timeout: deadlocked")
+ 	case <-done:
+ 	}
+ 	m.Shutdown()

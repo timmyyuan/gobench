@@ -1,0 +1,38 @@
+diff --git a/pkg/plugins/plugin_test.go b/pkg/plugins/plugin_test.go
+index b19c0d52f1..400bff8bb9 100644
+--- a/pkg/plugins/plugin_test.go
++++ b/pkg/plugins/plugin_test.go
+@@ -2,8 +2,10 @@ package plugins
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"path/filepath"
+ 	"runtime"
++	"runtime/debug"
+ 	"sync"
+ 	"testing"
+ 	"time"
+@@ -37,7 +39,8 @@ func testActive(t *testing.T, p *Plugin) {
+ 	select {
+ 	case <-time.After(100 * time.Millisecond):
+ 		_, f, l, _ := runtime.Caller(1)
+-		t.Fatalf("%s:%d: deadlock in waitActive", filepath.Base(f), l)
++		debug.SetTraceback("all")
++		panic(fmt.Sprintf("%s:%d: deadlock in waitActive", filepath.Base(f), l))
+ 	case <-done:
+ 	}
+ 
+diff --git a/pkg/plugins/plugins.go b/pkg/plugins/plugins.go
+index c0059cba75..e60e0ee97b 100644
+--- a/pkg/plugins/plugins.go
++++ b/pkg/plugins/plugins.go
+@@ -169,7 +169,7 @@ func (p *Plugin) activateWithLock() error {
+ 
+ func (p *Plugin) waitActive() error {
+ 	p.activateWait.L.Lock()
+-	for !p.activated() && p.activateErr == nil {
++	for !p.activated() {
+ 		p.activateWait.Wait()
+ 	}
+ 	p.activateWait.L.Unlock()

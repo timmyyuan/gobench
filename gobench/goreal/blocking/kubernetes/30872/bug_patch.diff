@@ -1,0 +1,77 @@
+diff --git a/federation/pkg/federation-controller/namespace/namespace_controller_test.go b/federation/pkg/federation-controller/namespace/namespace_controller_test.go
+index 5119fd48c07..a12c140809f 100644
+--- a/federation/pkg/federation-controller/namespace/namespace_controller_test.go
++++ b/federation/pkg/federation-controller/namespace/namespace_controller_test.go
+@@ -18,6 +18,7 @@ package namespace
+ 
+ import (
+ 	"fmt"
++	"runtime/debug"
+ 	"testing"
+ 	"time"
+ 
+@@ -83,6 +84,10 @@ func TestNamespaceController(t *testing.T) {
+ 	// Test add federated namespace.
+ 	namespaceWatch.Add(&ns1)
+ 	createdNamespace := GetNamespaceFromChan(cluster1CreateChan)
++	if createdNamespace == nil {
++		debug.SetTraceback("all")
++		panic("Expected value not to be nil.")
++	}
+ 	assert.NotNil(t, createdNamespace)
+ 	assert.Equal(t, ns1.Name, createdNamespace.Name)
+ 
+diff --git a/federation/pkg/federation-controller/util/federated_informer.go b/federation/pkg/federation-controller/util/federated_informer.go
+index 19f7b8b07eb..24de649ee8b 100644
+--- a/federation/pkg/federation-controller/util/federated_informer.go
++++ b/federation/pkg/federation-controller/util/federated_informer.go
+@@ -344,6 +344,8 @@ func (f *federatedInformerImpl) getReadyClusterUnlocked(name string) (*federatio
+ 
+ // Synced returns true if the view is synced (for the first time)
+ func (f *federatedInformerImpl) ClustersSynced() bool {
++	f.Lock()
++	defer f.Unlock()
+ 	return f.clusterInformer.controller.HasSynced()
+ }
+ 
+@@ -450,31 +452,18 @@ func (fs *federatedStoreImpl) GetKeyFor(item interface{}) string {
+ // Checks whether stores for all clusters form the lists (and only these) are there and
+ // are synced.
+ func (fs *federatedStoreImpl) ClustersSynced(clusters []*federation_api.Cluster) bool {
++	fs.federatedInformer.Lock()
++	defer fs.federatedInformer.Unlock()
+ 
+-	// Get the list of informers to check under a lock and check it outside.
+-	okSoFar, informersToCheck := func() (bool, []informer) {
+-		fs.federatedInformer.Lock()
+-		defer fs.federatedInformer.Unlock()
+-
+-		if len(fs.federatedInformer.targetInformers) != len(clusters) {
+-			return false, []informer{}
+-		}
+-		informersToCheck := make([]informer, 0, len(clusters))
+-		for _, cluster := range clusters {
+-			if targetInformer, found := fs.federatedInformer.targetInformers[cluster.Name]; found {
+-				informersToCheck = append(informersToCheck, targetInformer)
+-			} else {
+-				return false, []informer{}
+-			}
+-		}
+-		return true, informersToCheck
+-	}()
+-
+-	if !okSoFar {
++	if len(fs.federatedInformer.targetInformers) != len(clusters) {
+ 		return false
+ 	}
+-	for _, informerToCheck := range informersToCheck {
+-		if !informerToCheck.controller.HasSynced() {
++	for _, cluster := range clusters {
++		if targetInformer, found := fs.federatedInformer.targetInformers[cluster.Name]; found {
++			if !targetInformer.controller.HasSynced() {
++				return false
++			}
++		} else {
+ 			return false
+ 		}
+ 	}

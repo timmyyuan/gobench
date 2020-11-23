@@ -1,0 +1,18 @@
+diff --git a/lib/nat/structs.go b/lib/nat/structs.go
+index 32dae4a5..2d218ca0 100644
+--- a/lib/nat/structs.go
++++ b/lib/nat/structs.go
+@@ -53,11 +53,11 @@ func (m *Mapping) clearAddresses() {
+ 		removed = append(removed, addr)
+ 		delete(m.extAddresses, id)
+ 	}
+-	m.expires = time.Time{}
+-	m.mut.Unlock()
+ 	if len(removed) > 0 {
+ 		m.notify(nil, removed)
+ 	}
++	m.expires = time.Time{}
++	m.mut.Unlock()
+ }
+ 
+ func (m *Mapping) notify(added, removed []Address) {

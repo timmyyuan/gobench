@@ -1,0 +1,185 @@
+diff --git a/pkg/envoy/agent.go b/pkg/envoy/agent.go
+index 638578e33..f6644419a 100644
+--- a/pkg/envoy/agent.go
++++ b/pkg/envoy/agent.go
+@@ -73,6 +73,7 @@ const errOutOfMemory = "signal: killed"
+ func NewAgent(proxy Proxy, terminationDrainDuration time.Duration) Agent {
+ 	return &agent{
+ 		proxy:                    proxy,
++		mu:                       &sync.Mutex{},
+ 		statusCh:                 make(chan exitStatus),
+ 		activeEpochs:             map[int]chan error{},
+ 		terminationDrainDuration: terminationDrainDuration,
+@@ -99,8 +100,7 @@ type agent struct {
+ 	// proxy commands
+ 	proxy Proxy
+ 
+-	restartMutex sync.Mutex
+-	mutex        sync.Mutex
++	mu           *sync.Mutex
+ 	activeEpochs map[int]chan error
+ 
+ 	// currentEpoch represents the epoch of the most recent proxy. When a new proxy is created this should be incremented
+@@ -122,97 +122,75 @@ type exitStatus struct {
+ }
+ 
+ func (a *agent) Restart(config interface{}) {
+-	// Only allow one restart to execute at a time.
+-	a.restartMutex.Lock()
+-	defer a.restartMutex.Unlock()
+-
+-	// Protect access to internal state.
+-	a.mutex.Lock()
++	a.mu.Lock()
++	defer a.mu.Unlock()
+ 
+ 	if reflect.DeepEqual(a.currentConfig, config) {
+ 		// Same configuration - nothing to do.
+-		a.mutex.Unlock()
+ 		return
+ 	}
+ 
+-	hasActiveEpoch := len(a.activeEpochs) > 0
+-	activeEpoch := a.currentEpoch
++	log.Infof("Received new config")
+ 
+-	// Increment the latest running epoch
+-	epoch := a.currentEpoch + 1
+-	log.Infof("Received new config, creating new Envoy epoch %d", epoch)
++	// Make sure the current epoch (if there is one) is live before performing a hot restart.
++	a.waitUntilLive()
+ 
+-	a.currentEpoch = epoch
++	// Increment the latest running epoch
++	a.currentEpoch++
+ 	a.currentConfig = config
+ 
+ 	// Add the new epoch to the map.
+ 	abortCh := make(chan error, 1)
+ 	a.activeEpochs[a.currentEpoch] = abortCh
+ 
+-	// Unlock before the wait to avoid delaying envoy exit logic.
+-	a.mutex.Unlock()
+-
+-	// Wait for previous epoch to go live (if one exists) before performing a hot restart.
+-	if hasActiveEpoch {
+-		a.waitUntilLive(activeEpoch)
+-	}
+-
+-	go a.runWait(config, epoch, abortCh)
++	go a.runWait(a.currentConfig, a.currentEpoch, abortCh)
+ }
+ 
+ // waitUntilLive waits for the current epoch (if there is one) to go live.
+-func (a *agent) waitUntilLive(epoch int) {
+-	log.Infof("waiting for epoch %d to go live before performing a hot restart", epoch)
++func (a *agent) waitUntilLive() {
++	// Make sure there is a currently active epoch. If not, just return.
++	if len(a.activeEpochs) == 0 {
++		log.Info("no previous epoch exists, starting now")
++		return
++	}
++
++	log.Infof("waiting for epoch %d to go live before performing a hot restart", a.currentEpoch)
+ 
+ 	// Timeout after 20 seconds. Envoy internally uses a 15s timer, so we set ours a bit above that.
+ 	interval := time.NewTicker(500 * time.Millisecond)
+ 	timer := time.NewTimer(20 * time.Second)
+ 
+-	isDone := func() bool {
+-		if !a.isActive(epoch) {
+-			log.Warnf("epoch %d exited while waiting for it to go live.", epoch)
+-			return true
+-		}
+-
+-		return a.proxy.IsLive()
+-	}
+-
+ 	defer func() {
+ 		interval.Stop()
+ 		timer.Stop()
+ 	}()
+ 
+-	// Do an initial check to avoid an initial wait.
+-	if isDone() {
++	// Do an initial check on the live state to avoid any waits if possible.
++	if a.proxy.IsLive() {
++		// It's live!
+ 		return
+ 	}
+ 
+ 	for {
+ 		select {
+ 		case <-timer.C:
+-			log.Warnf("timed out waiting for epoch %d to go live.", epoch)
++			log.Warnf("timed out waiting for epoch %d to go live.", a.currentEpoch)
+ 			return
+ 		case <-interval.C:
+-			if isDone() {
++			if a.proxy.IsLive() {
++				// It's live!
+ 				return
+ 			}
+ 		}
+ 	}
+ }
+ 
+-func (a *agent) isActive(epoch int) bool {
+-	a.mutex.Lock()
+-	defer a.mutex.Unlock()
+-	_, ok := a.activeEpochs[epoch]
+-	return ok
+-}
+-
+ func (a *agent) Run(ctx context.Context) error {
+ 	log.Info("Starting proxy agent")
+ 	for {
+ 		select {
+ 		case status := <-a.statusCh:
+-			a.mutex.Lock()
++			a.mu.Lock()
+ 			if status.err != nil {
+ 				if status.err.Error() == errOutOfMemory {
+ 					log.Warnf("Envoy may have been out of memory killed. Check memory usage and limits.")
+@@ -225,7 +203,7 @@ func (a *agent) Run(ctx context.Context) error {
+ 			delete(a.activeEpochs, status.epoch)
+ 
+ 			active := len(a.activeEpochs)
+-			a.mutex.Unlock()
++			a.mu.Unlock()
+ 
+ 			if active == 0 {
+ 				log.Infof("No more active epochs, terminating")
+@@ -261,8 +239,8 @@ func (a *agent) runWait(config interface{}, epoch int, abortCh <-chan error) {
+ 
+ // abortAll sends abort error to all proxies
+ func (a *agent) abortAll() {
+-	a.mutex.Lock()
+-	defer a.mutex.Unlock()
++	a.mu.Lock()
++	defer a.mu.Unlock()
+ 	for epoch, abortCh := range a.activeEpochs {
+ 		log.Warnf("Aborting epoch %d...", epoch)
+ 		abortCh <- errAbort
+diff --git a/pkg/envoy/agent_test.go b/pkg/envoy/agent_test.go
+index 09ea287d1..3e10dc8fb 100644
+--- a/pkg/envoy/agent_test.go
++++ b/pkg/envoy/agent_test.go
+@@ -17,6 +17,7 @@ package envoy
+ import (
+ 	"context"
+ 	"errors"
++	"runtime/debug"
+ 	"sync"
+ 	"sync/atomic"
+ 	"testing"
+@@ -210,7 +211,8 @@ func TestExitDuringWaitForLive(t *testing.T) {
+ 		epoch1StartTime = time.Now()
+ 		break
+ 	case <-time.After(5 * time.Second):
+-		t.Fatalf("timed out waiting for epoch 1 to start")
++		debug.SetTraceback("all")
++		panic("timed out waiting for epoch 1 to start")
+ 	}
+ 
+ 	// An error threshold used for the time comparison. Should (hopefully) be enough to avoid flakes.

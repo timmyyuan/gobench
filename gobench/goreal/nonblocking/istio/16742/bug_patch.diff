@@ -1,0 +1,469 @@
+diff --git a/pilot/pkg/model/context.go b/pilot/pkg/model/context.go
+index c8ef47ec2..b575dfe49 100644
+--- a/pilot/pkg/model/context.go
++++ b/pilot/pkg/model/context.go
+@@ -266,9 +266,7 @@ func (node *Proxy) SetServiceInstances(env *Environment) error {
+ 	return nil
+ }
+ 
+-// SetWorkloadLabels will reset the proxy.WorkloadLabels if `force` = true,
+-// otherwise only set it when it is nil.
+-func (node *Proxy) SetWorkloadLabels(env *Environment, force bool) error {
++func (node *Proxy) SetWorkloadLabels(env *Environment) error {
+ 	// The WorkloadLabels is already parsed from Node metadata["LABELS"]
+ 	// Or updated in DiscoveryServer.WorkloadUpdate.
+ 	if node.WorkloadLabels != nil {
+diff --git a/pilot/pkg/networking/core/v1alpha3/gateway.go b/pilot/pkg/networking/core/v1alpha3/gateway.go
+index 8ace2b2a7..6623f6749 100644
+--- a/pilot/pkg/networking/core/v1alpha3/gateway.go
++++ b/pilot/pkg/networking/core/v1alpha3/gateway.go
+@@ -207,7 +207,7 @@ func (configgen *ConfigGeneratorImpl) buildGatewayListeners(
+ }
+ 
+ func (configgen *ConfigGeneratorImpl) buildGatewayHTTPRouteConfig(env *model.Environment, node *model.Proxy, push *model.PushContext,
+-	routeName string) *xdsapi.RouteConfiguration {
++	_ []*model.ServiceInstance, routeName string) *xdsapi.RouteConfiguration {
+ 
+ 	services := push.Services(node)
+ 
+@@ -252,7 +252,7 @@ func (configgen *ConfigGeneratorImpl) buildGatewayHTTPRouteConfig(env *model.Env
+ 				continue
+ 			}
+ 
+-			routes, err := istio_route.BuildHTTPRoutesForVirtualService(node, push, virtualService, nameToServiceMap, port, map[string]bool{gatewayName: true})
++			routes, err := istio_route.BuildHTTPRoutesForVirtualService(node, push, virtualService, nameToServiceMap, port, nil, map[string]bool{gatewayName: true})
+ 			if err != nil {
+ 				log.Debugf("%s omitting routes for service %v due to error: %v", node.ID, virtualService, err)
+ 				continue
+diff --git a/pilot/pkg/networking/core/v1alpha3/gateway_test.go b/pilot/pkg/networking/core/v1alpha3/gateway_test.go
+index b918366bc..4d75eb56f 100644
+--- a/pilot/pkg/networking/core/v1alpha3/gateway_test.go
++++ b/pilot/pkg/networking/core/v1alpha3/gateway_test.go
+@@ -946,7 +946,7 @@ func TestGatewayHTTPRouteConfig(t *testing.T) {
+ 			configgen := NewConfigGenerator([]plugin.Plugin{p})
+ 			env := buildEnv(t, tt.gateways, tt.virtualServices)
+ 			proxy13Gateway.SetGatewaysForProxy(env.PushContext)
+-			route := configgen.buildGatewayHTTPRouteConfig(&env, &proxy13Gateway, env.PushContext, tt.routeName)
++			route := configgen.buildGatewayHTTPRouteConfig(&env, &proxy13Gateway, env.PushContext, proxyInstances, tt.routeName)
+ 			if route == nil {
+ 				t.Fatal("got an empty route configuration")
+ 			}
+diff --git a/pilot/pkg/networking/core/v1alpha3/httproute.go b/pilot/pkg/networking/core/v1alpha3/httproute.go
+index aa84fe242..1f5d12a17 100644
+--- a/pilot/pkg/networking/core/v1alpha3/httproute.go
++++ b/pilot/pkg/networking/core/v1alpha3/httproute.go
+@@ -40,16 +40,18 @@ import (
+ // BuildHTTPRoutes produces a list of routes for the proxy
+ func (configgen *ConfigGeneratorImpl) BuildHTTPRoutes(env *model.Environment, node *model.Proxy, push *model.PushContext,
+ 	routeName string) *xdsapi.RouteConfiguration {
++	// TODO: Move all this out
++	proxyInstances := node.ServiceInstances
+ 	var rc *xdsapi.RouteConfiguration
+ 	switch node.Type {
+ 	case model.SidecarProxy:
+-		rc = configgen.buildSidecarOutboundHTTPRouteConfig(env, node, push, routeName)
++		rc = configgen.buildSidecarOutboundHTTPRouteConfig(env, node, push, proxyInstances, routeName)
+ 		if rc != nil {
+ 			rc = envoyfilter.ApplyRouteConfigurationPatches(networking.EnvoyFilter_SIDECAR_OUTBOUND, node, push, rc)
+ 		}
+ 		return rc
+ 	case model.Router:
+-		rc = configgen.buildGatewayHTTPRouteConfig(env, node, push, routeName)
++		rc = configgen.buildGatewayHTTPRouteConfig(env, node, push, proxyInstances, routeName)
+ 		if rc != nil {
+ 			rc = envoyfilter.ApplyRouteConfigurationPatches(networking.EnvoyFilter_GATEWAY, node, push, rc)
+ 		}
+@@ -99,7 +101,7 @@ func (configgen *ConfigGeneratorImpl) buildSidecarInboundHTTPRouteConfig(env *mo
+ // buildSidecarOutboundHTTPRouteConfig builds an outbound HTTP Route for sidecar.
+ // Based on port, will determine all virtual hosts that listen on the port.
+ func (configgen *ConfigGeneratorImpl) buildSidecarOutboundHTTPRouteConfig(env *model.Environment, node *model.Proxy, push *model.PushContext,
+-	routeName string) *xdsapi.RouteConfiguration {
++	_ []*model.ServiceInstance, routeName string) *xdsapi.RouteConfiguration {
+ 
+ 	listenerPort := 0
+ 	var err error
+@@ -157,7 +159,7 @@ func (configgen *ConfigGeneratorImpl) buildSidecarOutboundHTTPRouteConfig(env *m
+ 
+ 	// Get list of virtual services bound to the mesh gateway
+ 	virtualHostWrappers := istio_route.BuildSidecarVirtualHostsFromConfigAndRegistry(node, push, nameToServiceMap,
+-		virtualServices, listenerPort)
++		node.WorkloadLabels, virtualServices, listenerPort)
+ 	vHostPortMap := make(map[int][]*route.VirtualHost)
+ 	uniques := make(map[string]struct{})
+ 	for _, virtualHostWrapper := range virtualHostWrappers {
+diff --git a/pilot/pkg/networking/core/v1alpha3/httproute_test.go b/pilot/pkg/networking/core/v1alpha3/httproute_test.go
+index 079645d9a..b9daa5f6d 100644
+--- a/pilot/pkg/networking/core/v1alpha3/httproute_test.go
++++ b/pilot/pkg/networking/core/v1alpha3/httproute_test.go
+@@ -578,7 +578,7 @@ func testSidecarRDSVHosts(t *testing.T, services []*model.Service,
+ 		_ = os.Setenv("PILOT_ENABLE_FALLTHROUGH_ROUTE", "1")
+ 	}
+ 
+-	route := configgen.buildSidecarOutboundHTTPRouteConfig(&env, &proxy, env.PushContext, routeName)
++	route := configgen.buildSidecarOutboundHTTPRouteConfig(&env, &proxy, env.PushContext, proxyInstances, routeName)
+ 	if route == nil {
+ 		t.Fatalf("got nil route for %s", routeName)
+ 	}
+diff --git a/pilot/pkg/networking/core/v1alpha3/route/route.go b/pilot/pkg/networking/core/v1alpha3/route/route.go
+index 5f369f614..38a201f9f 100644
+--- a/pilot/pkg/networking/core/v1alpha3/route/route.go
++++ b/pilot/pkg/networking/core/v1alpha3/route/route.go
+@@ -80,14 +80,14 @@ func BuildSidecarVirtualHostsFromConfigAndRegistry(
+ 	node *model.Proxy,
+ 	push *model.PushContext,
+ 	serviceRegistry map[host.Name]*model.Service,
+-	virtualServices []model.Config,
+-	listenPort int) []VirtualHostWrapper {
++	proxyLabels labels.Collection,
++	virtualServices []model.Config, listenPort int) []VirtualHostWrapper {
+ 
+ 	out := make([]VirtualHostWrapper, 0)
+ 
+ 	// translate all virtual service configs into virtual hosts
+ 	for _, virtualService := range virtualServices {
+-		wrappers := buildSidecarVirtualHostsForVirtualService(node, push, virtualService, serviceRegistry, listenPort)
++		wrappers := buildSidecarVirtualHostsForVirtualService(node, push, virtualService, serviceRegistry, proxyLabels, listenPort)
+ 		if len(wrappers) == 0 {
+ 			// If none of the routes matched by source (i.e. proxyLabels), then discard this entire virtual service
+ 			continue
+@@ -168,6 +168,7 @@ func buildSidecarVirtualHostsForVirtualService(
+ 	push *model.PushContext,
+ 	virtualService model.Config,
+ 	serviceRegistry map[host.Name]*model.Service,
++	proxyLabels labels.Collection,
+ 	listenPort int) []VirtualHostWrapper {
+ 	hosts, servicesInVirtualService := separateVSHostsAndServices(virtualService, serviceRegistry)
+ 
+@@ -197,7 +198,7 @@ func buildSidecarVirtualHostsForVirtualService(
+ 	meshGateway := map[string]bool{constants.IstioMeshGateway: true}
+ 	out := make([]VirtualHostWrapper, 0, len(serviceByPort))
+ 	for port, portServices := range serviceByPort {
+-		routes, err := BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, listenPort, meshGateway)
++		routes, err := BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, listenPort, proxyLabels, meshGateway)
+ 		if err != nil || len(routes) == 0 {
+ 			continue
+ 		}
+@@ -252,6 +253,7 @@ func BuildHTTPRoutesForVirtualService(
+ 	virtualService model.Config,
+ 	serviceRegistry map[host.Name]*model.Service,
+ 	listenPort int,
++	proxyLabels labels.Collection,
+ 	gatewayNames map[string]bool) ([]*route.Route, error) {
+ 
+ 	vs, ok := virtualService.Spec.(*networking.VirtualService)
+@@ -263,13 +265,13 @@ func BuildHTTPRoutesForVirtualService(
+ allroutes:
+ 	for _, http := range vs.Http {
+ 		if len(http.Match) == 0 {
+-			if r := translateRoute(push, node, http, nil, listenPort, virtualService, serviceRegistry, gatewayNames); r != nil {
++			if r := translateRoute(push, node, http, nil, listenPort, virtualService, serviceRegistry, proxyLabels, gatewayNames); r != nil {
+ 				out = append(out, r)
+ 			}
+ 			break allroutes // we have a rule with catch all match prefix: /. Other rules are of no use
+ 		} else {
+ 			for _, match := range http.Match {
+-				if r := translateRoute(push, node, http, match, listenPort, virtualService, serviceRegistry, gatewayNames); r != nil {
++				if r := translateRoute(push, node, http, match, listenPort, virtualService, serviceRegistry, proxyLabels, gatewayNames); r != nil {
+ 					out = append(out, r)
+ 					rType, _ := getEnvoyRouteTypeAndVal(r)
+ 					if rType == envoyCatchAll {
+@@ -313,13 +315,14 @@ func translateRoute(push *model.PushContext, node *model.Proxy, in *networking.H
+ 	match *networking.HTTPMatchRequest, port int,
+ 	virtualService model.Config,
+ 	serviceRegistry map[host.Name]*model.Service,
++	proxyLabels labels.Collection,
+ 	gatewayNames map[string]bool) *route.Route {
+ 
+ 	// When building routes, its okay if the target cluster cannot be
+ 	// resolved Traffic to such clusters will blackhole.
+ 
+ 	// Match by source labels/gateway names inside the match condition
+-	if !sourceMatchHTTP(match, node.WorkloadLabels, gatewayNames) {
++	if !sourceMatchHTTP(match, proxyLabels, gatewayNames) {
+ 		return nil
+ 	}
+ 
+diff --git a/pilot/pkg/networking/core/v1alpha3/route/route_test.go b/pilot/pkg/networking/core/v1alpha3/route/route_test.go
+index 5b44fc4ab..d5685c913 100644
+--- a/pilot/pkg/networking/core/v1alpha3/route/route_test.go
++++ b/pilot/pkg/networking/core/v1alpha3/route/route_test.go
+@@ -27,6 +27,7 @@ import (
+ 	"istio.io/istio/pilot/pkg/model"
+ 	"istio.io/istio/pilot/pkg/networking/core/v1alpha3/route"
+ 	"istio.io/istio/pkg/config/host"
++	"istio.io/istio/pkg/config/labels"
+ 	"istio.io/istio/pkg/config/mesh"
+ 	"istio.io/istio/pkg/config/protocol"
+ 	"istio.io/istio/pkg/config/schemas"
+@@ -61,7 +62,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 	t.Run("for virtual service", func(t *testing.T) {
+ 		g := gomega.NewGomegaWithT(t)
+ 
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, nil, virtualServicePlain, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, nil, virtualServicePlain, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 	})
+@@ -103,7 +104,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 			},
+ 		})
+ 
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualServicePlain, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualServicePlain, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -150,7 +151,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 			},
+ 		})
+ 
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -193,7 +194,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 				Spec: portLevelDestinationRuleWithSubsetPolicy,
+ 			}})
+ 
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -241,7 +242,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 		push.SetDestinationRules([]model.Config{
+ 			cnfg})
+ 
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualService, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -277,7 +278,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 			}})
+ 
+ 		gatewayNames := map[string]bool{"some-gateway": true}
+-		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualServicePlain, serviceRegistry, 8080, gatewayNames)
++		routes, err := route.BuildHTTPRoutesForVirtualService(node, push, virtualServicePlain, serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -296,7 +297,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 		g := gomega.NewGomegaWithT(t)
+ 
+ 		routes, err := route.BuildHTTPRoutesForVirtualService(node, nil, virtualServiceWithRedirect,
+-			serviceRegistry, 8080, gatewayNames)
++			serviceRegistry, 8080, labels.Collection{}, gatewayNames)
+ 		g.Expect(err).NotTo(gomega.HaveOccurred())
+ 		g.Expect(len(routes)).To(gomega.Equal(1))
+ 
+@@ -321,7 +322,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 				},
+ 				Spec: networkingDestinationRule,
+ 			}})
+-		vhosts := route.BuildSidecarVirtualHostsFromConfigAndRegistry(node, push, serviceRegistry, []model.Config{}, 8080)
++		vhosts := route.BuildSidecarVirtualHostsFromConfigAndRegistry(node, push, serviceRegistry, labels.Collection{}, []model.Config{}, 8080)
+ 		g.Expect(vhosts[0].Routes[0].Action.(*envoyroute.Route_Route).Route.HashPolicy).NotTo(gomega.BeNil())
+ 	})
+ 	t.Run("for no virtualservice but has destinationrule with portLevel consistentHash loadbalancer", func(t *testing.T) {
+@@ -342,7 +343,7 @@ func TestBuildHTTPRoutes(t *testing.T) {
+ 				Spec: networkingDestinationRuleWithPortLevelTrafficPolicy,
+ 			}})
+ 
+-		vhosts := route.BuildSidecarVirtualHostsFromConfigAndRegistry(node, push, serviceRegistry, []model.Config{}, 8080)
++		vhosts := route.BuildSidecarVirtualHostsFromConfigAndRegistry(node, push, serviceRegistry, labels.Collection{}, []model.Config{}, 8080)
+ 
+ 		hashPolicy := &envoyroute.RouteAction_HashPolicy{
+ 			PolicySpecifier: &envoyroute.RouteAction_HashPolicy_Cookie_{
+diff --git a/pilot/pkg/proxy/envoy/v2/ads.go b/pilot/pkg/proxy/envoy/v2/ads.go
+index 56f14e492..ab4be44ae 100644
+--- a/pilot/pkg/proxy/envoy/v2/ads.go
++++ b/pilot/pkg/proxy/envoy/v2/ads.go
+@@ -84,10 +84,6 @@ type XdsConnection struct {
+ 	// same info can be sent to all clients, without recomputing.
+ 	pushChannel chan *XdsEvent
+ 
+-	// Sending on this channel results in a reset on proxy attributes.
+-	// Generally it comes before a XdsEvent.
+-	updateChannel chan *UpdateEvent
+-
+ 	// TODO: migrate other fields as needed from model.Proxy and replace it
+ 
+ 	//HttpConnectionManagers map[string]*http_conn.HttpConnectionManager
+@@ -191,22 +187,15 @@ type XdsEvent struct {
+ 	done func()
+ }
+ 
+-// UpdateEvent represents a update request for the proxy.
+-// This will trigger proxy specific attributes reset before each push.
+-type UpdateEvent struct {
+-	workloadLabel bool
+-}
+-
+ func newXdsConnection(peerAddr string, stream DiscoveryStream) *XdsConnection {
+ 	return &XdsConnection{
+-		pushChannel:   make(chan *XdsEvent),
+-		updateChannel: make(chan *UpdateEvent, 1),
+-		PeerAddr:      peerAddr,
+-		Clusters:      []string{},
+-		Connect:       time.Now(),
+-		stream:        stream,
+-		LDSListeners:  []*xdsapi.Listener{},
+-		RouteConfigs:  map[string]*xdsapi.RouteConfiguration{},
++		pushChannel:  make(chan *XdsEvent),
++		PeerAddr:     peerAddr,
++		Clusters:     []string{},
++		Connect:      time.Now(),
++		stream:       stream,
++		LDSListeners: []*xdsapi.Listener{},
++		RouteConfigs: map[string]*xdsapi.RouteConfiguration{},
+ 	}
+ }
+ 
+@@ -455,10 +444,6 @@ func (s *DiscoveryServer) StreamAggregatedResources(stream ads.AggregatedDiscove
+ 			} else {
+ 				con.mu.Unlock()
+ 			}
+-		case updateEv := <-con.updateChannel:
+-			if updateEv.workloadLabel && con.modelNode != nil {
+-				_ = con.modelNode.SetWorkloadLabels(s.Env, true)
+-			}
+ 		case pushEv := <-con.pushChannel:
+ 			// It is called when config changes.
+ 			// This is not optimized yet - we should detect what changed based on event and only
+@@ -515,7 +500,7 @@ func (s *DiscoveryServer) initConnectionNode(discReq *xdsapi.DiscoveryRequest, c
+ 		nt.Locality = discReq.Node.Locality
+ 	}
+ 
+-	if err := nt.SetWorkloadLabels(s.Env, false); err != nil {
++	if err := nt.SetWorkloadLabels(s.Env); err != nil {
+ 		return err
+ 	}
+ 
+@@ -559,7 +544,7 @@ func (s *DiscoveryServer) pushConnection(con *XdsConnection, pushEv *XdsEvent) e
+ 		return nil
+ 	}
+ 
+-	if err := con.modelNode.SetWorkloadLabels(s.Env, false); err != nil {
++	if err := con.modelNode.SetWorkloadLabels(s.Env); err != nil {
+ 		return err
+ 	}
+ 
+diff --git a/pilot/pkg/proxy/envoy/v2/discovery.go b/pilot/pkg/proxy/envoy/v2/discovery.go
+index 0071baf27..4d00677f4 100644
+--- a/pilot/pkg/proxy/envoy/v2/discovery.go
++++ b/pilot/pkg/proxy/envoy/v2/discovery.go
+@@ -109,7 +109,7 @@ type DiscoveryServer struct {
+ 
+ 	// WorkloadsById keeps track of information about a workload, based on direct notifications
+ 	// from registry. This acts as a cache and allows detecting changes.
+-	// clusterID => workload ip => Workload
++	// clusterID => workloadID => Workload
+ 	WorkloadsByID map[string]map[string]*Workload
+ 
+ 	pushChannel chan *model.PushRequest
+diff --git a/pilot/pkg/proxy/envoy/v2/eds.go b/pilot/pkg/proxy/envoy/v2/eds.go
+index 22ceed840..5abe79998 100644
+--- a/pilot/pkg/proxy/envoy/v2/eds.go
++++ b/pilot/pkg/proxy/envoy/v2/eds.go
+@@ -430,27 +430,27 @@ func (s *DiscoveryServer) edsIncremental(version string, push *model.PushContext
+ }
+ 
+ // WorkloadUpdate is called when workload labels/annotations are updated.
+-func (s *DiscoveryServer) WorkloadUpdate(clusterID, ip string, workloadLabels map[string]string, _ map[string]string) {
++func (s *DiscoveryServer) WorkloadUpdate(shard, id string, workloadLabels map[string]string, _ map[string]string) {
+ 	inboundWorkloadUpdates.Increment()
+ 	s.mutex.Lock()
+ 	defer s.mutex.Unlock()
+ 	if workloadLabels == nil {
+ 		// No push needed - the Endpoints object will also be triggered.
+-		delete(s.WorkloadsByID[clusterID], ip)
++		delete(s.WorkloadsByID[shard], id)
+ 		return
+ 	}
+ 
+-	_, f := s.WorkloadsByID[clusterID]
++	_, f := s.WorkloadsByID[shard]
+ 	if !f {
+-		s.WorkloadsByID[clusterID] = map[string]*Workload{ip: {Labels: workloadLabels}}
+-		s.sendPushRequestTo(ip)
++		s.WorkloadsByID[shard] = map[string]*Workload{id: {Labels: workloadLabels}}
++		s.sendPushRequestTo(id)
+ 		return
+ 	}
+ 
+-	w, ok := s.WorkloadsByID[clusterID][ip]
++	w, ok := s.WorkloadsByID[shard][id]
+ 	if !ok {
+-		s.WorkloadsByID[clusterID][ip] = &Workload{Labels: workloadLabels}
+-		s.sendPushRequestTo(ip)
++		s.WorkloadsByID[shard][id] = &Workload{Labels: workloadLabels}
++		s.sendPushRequestTo(id)
+ 		return
+ 	}
+ 
+@@ -464,13 +464,9 @@ func (s *DiscoveryServer) WorkloadUpdate(clusterID, ip string, workloadLabels ma
+ 	adsClientsMutex.RLock()
+ 	for _, connection := range adsClients {
+ 		// update node label
+-		if connection.modelNode.IPAddresses[0] == ip {
+-			select {
+-			// trigger re-set in SetWorkloadLabels
+-			case connection.updateChannel <- &UpdateEvent{workloadLabel: true}:
+-			default:
+-				adsLog.Infof("A workload %s label update request is ongoing", ip)
+-			}
++		if connection.modelNode.IPAddresses[0] == id {
++			// set to nil, trigger re-set in SetWorkloadLabels
++			connection.modelNode.WorkloadLabels = nil
+ 		}
+ 	}
+ 	adsClientsMutex.RUnlock()
+@@ -479,7 +475,7 @@ func (s *DiscoveryServer) WorkloadUpdate(clusterID, ip string, workloadLabels ma
+ 	// TODO: we can do a push for the affected workload only, but we need to confirm
+ 	// no other workload can be affected. Safer option is to fallback to full push.
+ 
+-	adsLog.Infof("Label change, full push %s", ip)
++	adsLog.Infof("Label change, full push %s ", id)
+ 	s.ConfigUpdate(&model.PushRequest{Full: true})
+ 
+ }
+@@ -511,15 +507,15 @@ func (s *DiscoveryServer) sendPushRequestTo(ip string) {
+ // It replaces InstancesByPort in model - instead of iterating over all endpoints it uses
+ // the hostname-keyed map. And it avoids the conversion from Endpoint to ServiceEntry to envoy
+ // on each step: instead the conversion happens once, when an endpoint is first discovered.
+-func (s *DiscoveryServer) EDSUpdate(clusterID, serviceName string, namespace string, istioEndpoints []*model.IstioEndpoint) error {
++func (s *DiscoveryServer) EDSUpdate(shard, serviceName string, namespace string, istioEndpoints []*model.IstioEndpoint) error {
+ 	inboundEDSUpdates.Increment()
+-	s.edsUpdate(clusterID, serviceName, namespace, istioEndpoints, false)
++	s.edsUpdate(shard, serviceName, namespace, istioEndpoints, false)
+ 	return nil
+ }
+ 
+-// edsUpdate updates edsUpdates by clusterID, serviceName, IstioEndpoints,
++// edsUpdate updates edsUpdates by shard, serviceName, IstioEndpoints,
+ // and requests a full/eds push.
+-func (s *DiscoveryServer) edsUpdate(clusterID, serviceName string, namespace string,
++func (s *DiscoveryServer) edsUpdate(shard, serviceName string, namespace string,
+ 	istioEndpoints []*model.IstioEndpoint, internal bool) {
+ 	// edsShardUpdate replaces a subset (shard) of endpoints, as result of an incremental
+ 	// update. The endpoint updates may be grouped by K8S clusters, other service registries
+@@ -534,7 +530,7 @@ func (s *DiscoveryServer) edsUpdate(clusterID, serviceName string, namespace str
+ 	if len(istioEndpoints) == 0 {
+ 		if s.EndpointShardsByService[serviceName][namespace] != nil {
+ 			s.EndpointShardsByService[serviceName][namespace].mutex.Lock()
+-			delete(s.EndpointShardsByService[serviceName][namespace].Shards, clusterID)
++			delete(s.EndpointShardsByService[serviceName][namespace].Shards, shard)
+ 			svcShards := len(s.EndpointShardsByService[serviceName][namespace].Shards)
+ 			s.EndpointShardsByService[serviceName][namespace].mutex.Unlock()
+ 			if svcShards == 0 {
+@@ -586,7 +582,7 @@ func (s *DiscoveryServer) edsUpdate(clusterID, serviceName string, namespace str
+ 		}
+ 	}
+ 	ep.mutex.Lock()
+-	ep.Shards[clusterID] = istioEndpoints
++	ep.Shards[shard] = istioEndpoints
+ 	ep.mutex.Unlock()
+ 
+ 	// for internal update: this called by DiscoveryServer.Push --> updateServiceShards,

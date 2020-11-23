@@ -1,0 +1,15 @@
+diff --git a/pkg/sql/backfill.go b/pkg/sql/backfill.go
+index fe54edebeb..ca6484c158 100644
+--- a/pkg/sql/backfill.go
++++ b/pkg/sql/backfill.go
+@@ -244,8 +244,7 @@ func (sc *SchemaChanger) validateChecks(
+ 		// Notify when validation is finished (or has returned an error) for a check.
+ 		countDone := make(chan struct{}, len(checks))
+ 
+-		for i := range checks {
+-			c := checks[i]
++		for _, c := range checks {
+ 			grp.GoCtx(func(ctx context.Context) error {
+ 				defer func() { countDone <- struct{}{} }()
+ 
+

@@ -1,0 +1,40 @@
+diff --git a/staging/src/k8s.io/kube-aggregator/pkg/apiserver/handler_proxy_test.go b/staging/src/k8s.io/kube-aggregator/pkg/apiserver/handler_proxy_test.go
+index 11e4c8fa8bc..77ee9cd562b 100644
+--- a/staging/src/k8s.io/kube-aggregator/pkg/apiserver/handler_proxy_test.go
++++ b/staging/src/k8s.io/kube-aggregator/pkg/apiserver/handler_proxy_test.go
+@@ -25,7 +25,6 @@ import (
+ 	"net/url"
+ 	"reflect"
+ 	"strings"
+-	"sync/atomic"
+ 	"testing"
+ 
+ 	"golang.org/x/net/websocket"
+@@ -302,16 +301,16 @@ func TestProxyUpgrade(t *testing.T) {
+ 	for k, tc := range testcases {
+ 		tcName := k
+ 		path := "/apis/" + tc.APIService.Spec.Group + "/" + tc.APIService.Spec.Version + "/foo"
+-		timesCalled := int32(0)
++		called := false
+ 
+ 		func() { // Cleanup after each test case.
+ 			backendHandler := http.NewServeMux()
+ 			backendHandler.Handle(path, websocket.Handler(func(ws *websocket.Conn) {
+-				atomic.AddInt32(&timesCalled, 1)
+ 				defer ws.Close()
+ 				body := make([]byte, 5)
+ 				ws.Read(body)
+ 				ws.Write([]byte("hello " + string(body)))
++				called = true
+ 			}))
+ 
+ 			backendServer := httptest.NewUnstartedServer(backendHandler)
+@@ -325,7 +324,7 @@ func TestProxyUpgrade(t *testing.T) {
+ 			defer backendServer.Close()
+ 
+ 			defer func() {
+-				if called := atomic.LoadInt32(&timesCalled) > 0; called != tc.ExpectCalled {
++				if called != tc.ExpectCalled {
+ 					t.Errorf("%s: expected called=%v, got %v", tcName, tc.ExpectCalled, called)
+ 				}
+ 			}()

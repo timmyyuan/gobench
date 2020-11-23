@@ -1,0 +1,39 @@
+diff --git a/pkg/scheduler/core/generic_scheduler_test.go b/pkg/scheduler/core/generic_scheduler_test.go
+index 9a1cd27bd2c..916181e5909 100644
+--- a/pkg/scheduler/core/generic_scheduler_test.go
++++ b/pkg/scheduler/core/generic_scheduler_test.go
+@@ -22,7 +22,6 @@ import (
+ 	"reflect"
+ 	"strconv"
+ 	"strings"
+-	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+@@ -143,7 +142,7 @@ var emptyFramework, _ = framework.NewFramework(EmptyPluginRegistry, nil, []sched
+ 
+ // FakeFilterPlugin is a test filter plugin used by default scheduler.
+ type FakeFilterPlugin struct {
+-	numFilterCalled int32
++	numFilterCalled int
+ 	failFilter      bool
+ }
+ 
+@@ -163,7 +162,7 @@ func (fp *FakeFilterPlugin) reset() {
+ // Filter is a test function that returns an error or nil, depending on the
+ // value of "failFilter".
+ func (fp *FakeFilterPlugin) Filter(pc *framework.PluginContext, pod *v1.Pod, nodeName string) *framework.Status {
+-	atomic.AddInt32(&fp.numFilterCalled, 1)
++	fp.numFilterCalled++
+ 
+ 	if fp.failFilter {
+ 		return framework.NewStatus(framework.Unschedulable, fmt.Sprintf("injecting failure for pod %v", pod.Name))
+@@ -172,7 +171,7 @@ func (fp *FakeFilterPlugin) Filter(pc *framework.PluginContext, pod *v1.Pod, nod
+ 	return nil
+ }
+ 
+-// NewFilterPlugin is the factory for filter plugin.
++// NewFilterPlugin is the factory for filtler plugin.
+ func NewFilterPlugin(_ *runtime.Unknown, _ framework.FrameworkHandle) (framework.Plugin, error) {
+ 	return filterPlugin, nil
+ }

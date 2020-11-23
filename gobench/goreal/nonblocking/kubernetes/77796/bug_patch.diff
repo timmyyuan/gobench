@@ -1,0 +1,37 @@
+diff --git a/staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher_whitebox_test.go b/staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher_whitebox_test.go
+index f2a2326f3f6..70d0a93ecbd 100644
+--- a/staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher_whitebox_test.go
++++ b/staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher_whitebox_test.go
+@@ -25,7 +25,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
+-	v1 "k8s.io/api/core/v1"
++	"k8s.io/api/core/v1"
+ 	"k8s.io/apimachinery/pkg/api/meta"
+ 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+ 	"k8s.io/apimachinery/pkg/fields"
+@@ -678,16 +678,12 @@ func TestDispatchingBookmarkEventsWithConcurrentStop(t *testing.T) {
+ 			t.Fatalf("failure to update version of object (%d) %#v", bookmark.ResourceVersion, bookmark.Object)
+ 		}
+ 
+-		wg := sync.WaitGroup{}
+-		wg.Add(2)
+ 		go func() {
+ 			cacher.dispatchEvent(bookmark)
+-			wg.Done()
+ 		}()
+ 
+ 		go func() {
+ 			w.Stop()
+-			wg.Done()
+ 		}()
+ 
+ 		done := make(chan struct{})
+@@ -704,6 +700,5 @@ func TestDispatchingBookmarkEventsWithConcurrentStop(t *testing.T) {
+ 			t.Fatal("receive result timeout")
+ 		}
+ 		w.Stop()
+-		wg.Wait()
+ 	}
+ }

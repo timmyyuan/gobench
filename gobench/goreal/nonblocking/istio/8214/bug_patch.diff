@@ -1,0 +1,34 @@
+diff --git a/pkg/cache/lruCache.go b/pkg/cache/lruCache.go
+index 5bc12d0b2..e7a949698 100644
+--- a/pkg/cache/lruCache.go
++++ b/pkg/cache/lruCache.go
+@@ -81,7 +81,7 @@ type lruWrapper struct {
+ }
+ 
+ type lruCache struct {
+-	sync.RWMutex
++	sync.Mutex
+ 	entries           []lruEntry            // allocate once, not resizable
+ 	sentinel          *lruEntry             // direct pointer to entries[0] to avoid bounds checking
+ 	lookup            map[interface{}]int32 // keys => entry index
+@@ -248,9 +248,9 @@ func (c *lruCache) SetWithExpiration(key interface{}, value interface{}, expirat
+ 	ent.value = value
+ 	ent.expiration = exp
+ 
+-	atomic.AddUint64(&c.stats.Writes, 1)
+-
+ 	c.Unlock()
++
++	atomic.AddUint64(&c.stats.Writes, 1)
+ }
+ 
+ func (c *lruCache) Get(key interface{}) (interface{}, bool) {
+@@ -308,8 +308,6 @@ func (c *lruCache) remove(index int32) {
+ }
+ 
+ func (c *lruCache) Stats() Stats {
+-	c.RLock()
+-	defer c.RUnlock()
+ 	return c.stats
+ }
+ 

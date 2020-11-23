@@ -1,0 +1,48 @@
+diff --git a/transport/handler_server.go b/transport/handler_server.go
+index 7e0fdb35..f1f6caf8 100644
+--- a/transport/handler_server.go
++++ b/transport/handler_server.go
+@@ -123,9 +123,10 @@ type serverHandlerTransport struct {
+ 	// when WriteStatus is called.
+ 	writes chan func()
+ 
+-	// block concurrent WriteStatus calls
+-	// e.g. grpc/(*serverStream).SendMsg/RecvMsg
+-	writeStatusMu sync.Mutex
++	mu sync.Mutex
++	// streamDone indicates whether WriteStatus has been called and writes channel
++	// has been closed.
++	streamDone bool
+ }
+ 
+ func (ht *serverHandlerTransport) Close() error {
+@@ -176,9 +177,13 @@ func (ht *serverHandlerTransport) do(fn func()) error {
+ }
+ 
+ func (ht *serverHandlerTransport) WriteStatus(s *Stream, st *status.Status) error {
+-	ht.writeStatusMu.Lock()
+-	defer ht.writeStatusMu.Unlock()
+-
++	ht.mu.Lock()
++	if ht.streamDone {
++		ht.mu.Unlock()
++		return nil
++	}
++	ht.streamDone = true
++	ht.mu.Unlock()
+ 	err := ht.do(func() {
+ 		ht.writeCommonHeaders(s)
+ 
+@@ -217,11 +222,7 @@ func (ht *serverHandlerTransport) WriteStatus(s *Stream, st *status.Status) erro
+ 			}
+ 		}
+ 	})
+-
+-	if err == nil { // transport has not been closed
+-		ht.Close()
+-		close(ht.writes)
+-	}
++	close(ht.writes)
+ 	return err
+ }
+ 

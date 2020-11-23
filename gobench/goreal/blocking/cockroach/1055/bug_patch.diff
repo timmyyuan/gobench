@@ -1,0 +1,153 @@
+diff --git a/storage/client_test.go b/storage/client_test.go
+index af8cf0cca2..a62be71f39 100644
+--- a/storage/client_test.go
++++ b/storage/client_test.go
+@@ -157,14 +157,11 @@ func (m *multiTestContext) Start(t *testing.T, numStores int) {
+ }
+ 
+ func (m *multiTestContext) Stop() {
+-	stoppers := append([]*util.Stopper{m.clientStopper, m.transportStopper}, m.stoppers...)
+-	// Quiesce all the stoppers so that we can stop all stoppers in unison.
+-	for _, s := range stoppers {
+-		s.Quiesce()
+-	}
+-	for _, s := range stoppers {
++	m.clientStopper.Stop()
++	for _, s := range m.stoppers {
+ 		s.Stop()
+ 	}
++	m.transportStopper.Stop()
+ 	// Remove the extra engine refcounts.
+ 	for _, e := range m.engines {
+ 		e.Close()
+diff --git a/util/stopper.go b/util/stopper.go
+index f72e4b7ee7..1589492947 100644
+--- a/util/stopper.go
++++ b/util/stopper.go
+@@ -19,6 +19,7 @@ package util
+ 
+ import (
+ 	"sync"
++	"sync/atomic"
+ )
+ 
+ // Closer is an interface for objects to attach to the stopper to
+@@ -50,20 +51,17 @@ type Stopper struct {
+ 	stopped  chan struct{}  // Closed when stopped completely
+ 	stop     sync.WaitGroup // Incremented for outstanding workers
+ 	mu       sync.Mutex     // Protects the fields below
+-	drain    *sync.Cond     // Conditional variable to wait for outstanding tasks
+-	draining bool           // true when Stop() has been called
+-	numTasks int            // number of outstanding tasks
++	draining int32          // 1 when Stop() has been called, updated atomically
++	drain    sync.WaitGroup // Incremented for outstanding tasks
+ 	closers  []Closer
+ }
+ 
+ // NewStopper returns an instance of Stopper.
+ func NewStopper() *Stopper {
+-	s := &Stopper{
++	return &Stopper{
+ 		stopper: make(chan struct{}),
+ 		stopped: make(chan struct{}),
+ 	}
+-	s.drain = sync.NewCond(&s.mu)
+-	return s
+ }
+ 
+ // RunWorker runs the supplied function as a "worker" to be stopped
+@@ -99,32 +97,36 @@ func (s *Stopper) AddCloser(c Closer) {
+ // Returns true if the task can be launched or false to indicate the
+ // system is currently draining and the task should be refused.
+ func (s *Stopper) StartTask() bool {
+-	s.mu.Lock()
+-	defer s.mu.Unlock()
+-	if s.draining {
+-		return false
++	// Avoid locking when we're draining (which would deadlock
++	// as soon as a call to StartTask() came in with Stop()
++	// holding the lock)
++	if atomic.LoadInt32(&s.draining) == 0 {
++		// The lock here is unfortunately necessary, since
++		// just having checked for draining=0 gives no
++		// guarantee that that's still the case now.
++		s.mu.Lock()
++		defer s.mu.Unlock()
++		s.drain.Add(1)
++		return true
+ 	}
+-	s.numTasks++
+-	return true
++	return false
+ }
+ 
+ // FinishTask removes one from the count of tasks left to drain in the
+ // system. This function must be invoked for every call to StartTask().
+ func (s *Stopper) FinishTask() {
+-	s.mu.Lock()
+-	defer s.mu.Unlock()
+-	s.numTasks--
+-	s.drain.Broadcast()
++	s.drain.Done()
+ }
+ 
+ // Stop signals all live workers to stop and then waits for each to
+ // confirm it has stopped (workers do this by calling SetStopped()).
+ func (s *Stopper) Stop() {
+-	s.Quiesce()
+-	close(s.stopper)
+-	s.stop.Wait()
+ 	s.mu.Lock()
+ 	defer s.mu.Unlock()
++	atomic.StoreInt32(&s.draining, 1)
++	s.drain.Wait()
++	close(s.stopper)
++	s.stop.Wait()
+ 	for _, c := range s.closers {
+ 		c.Close()
+ 	}
+@@ -160,14 +162,13 @@ func (s *Stopper) SetStopped() {
+ 	}
+ }
+ 
+-// Quiesce moves the stopper to state draining and waits until all
+-// tasks complete. This is used from Stop() and unittests.
++// Quiesce moves the stopper to state draining, waits until all tasks
++// complete, then moves back to non-draining state. This is used from
++// unittests.
+ func (s *Stopper) Quiesce() {
+ 	s.mu.Lock()
+ 	defer s.mu.Unlock()
+-	s.draining = true
+-	for s.numTasks > 0 {
+-		// Unlock s.mu, wait for the signal, and lock s.mu.
+-		s.drain.Wait()
+-	}
++	s.draining = 1
++	s.drain.Wait()
++	s.draining = 0
+ }
+diff --git a/util/stopper_test.go b/util/stopper_test.go
+index 248c7cd921..82a5e069d5 100644
+--- a/util/stopper_test.go
++++ b/util/stopper_test.go
+@@ -18,6 +18,8 @@
+ package util
+ 
+ import (
++	"fmt"
++	"runtime/debug"
+ 	"testing"
+ 	"time"
+ )
+@@ -217,7 +219,9 @@ func TestStopperQuiesce(t *testing.T) {
+ 	select {
+ 	case <-done:
+ 	case <-time.After(10 * time.Millisecond):
+-		t.Errorf("timed out waiting for stop")
++		debug.SetTraceback("all")
++		panic(fmt.Sprintf("timed out waiting for stop"))
++		// t.Errorf("timed out waiting for stop")
+ 	}
+ }
+ 

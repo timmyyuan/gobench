@@ -1,0 +1,17 @@
+diff --git a/cmd/dockerd/hack/malformed_host_override_test.go b/cmd/dockerd/hack/malformed_host_override_test.go
+index 443da3b34c..5bbe8405e9 100644
+--- a/cmd/dockerd/hack/malformed_host_override_test.go
++++ b/cmd/dockerd/hack/malformed_host_override_test.go
+@@ -38,9 +38,9 @@ func TestHeaderOverrideHack(t *testing.T) {
+ 	read := make([]byte, 4096)
+ 
+ 	for _, pair := range tests {
+-		go func(x []byte) {
+-			srv.Write(x)
+-		}(pair[0])
++		go func() {
++			srv.Write(pair[0])
++		}()
+ 		n, err := l.Read(read)
+ 		if err != nil && err != io.EOF {
+ 			t.Fatalf("read: %d - %d, err: %v\n%s", n, len(pair[0]), err, string(read[:n]))

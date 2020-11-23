@@ -1,0 +1,13 @@
+diff --git a/server.go b/server.go
+index 23c4629e..a87ce932 100644
+--- a/server.go
++++ b/server.go
+@@ -798,7 +798,7 @@ func (s *Server) Stop() {
+ func (s *Server) GracefulStop() {
+ 	s.mu.Lock()
+ 	if s.drain == true || s.conns == nil {
+-		s.mu.Unlock()
++		s.mu.Lock()
+ 		return
+ 	}
+ 	s.drain = true

@@ -1,0 +1,932 @@
+{
+  "cockroach_35003": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "563dbae003ea79b017842b24bc9d81b574e0a367",
+    "testfunc": "TestParallel",
+    "workdir": "./pkg/sql/logictest",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '865 i\\\t\\$(xgo) test \\$(GOFLAGS) -exec \\x27stress \\$(STRESSFLAGS)\\x27 -tags \\x27\\$(TAGS)\\x27 -ldflags \\x27\\$(LINKFLAGS)\\x27 \\$(PKG) -c -o /go/gobench.test' Makefile",
+      "sed -i '866d' Makefile"
+    ],
+    "build_commands": [
+      "make stressrace PKG=./pkg/sql/logictest TESTTIMEOUT=5m STRESSFLAGS='-maxtime 2m -timeout 1m'"
+    ],
+    "post_commands": []
+  },
+  "cockroach_35501": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous Function",
+    "goversion": "1.13",
+    "dev_deps": [
+      "cmake",
+      "autoconf",
+      "bison"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "dee133c8c3b026492b51dcd7b841d2606f3b7a69",
+    "testfunc": "TestLogic",
+    "workdir": "./pkg/sql/logictest",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '889 i\\\t\\$(xgo) test \\$(GOFLAGS) -tags \\x27\\$(TAGS)\\x27 -ldflags \\x27\\$(LINKFLAGS)\\x27 \\$(PKG) -c -o /go/gobench.test' Makefile",
+      "sed -i '890d' Makefile",
+      "mv ./pkg/sql/logictest/testdata/logic_test/alter_table alter_table",
+      "rm -rf ./pkg/sql/logictest/testdata/logic_test",
+      "mkdir -p ./pkg/sql/logictest/testdata/logic_test",
+      "mv alter_table ./pkg/sql/logictest/testdata/logic_test/"
+    ],
+    "build_commands": [
+      "make testrace PKG=./pkg/sql/logictest"
+    ],
+    "post_commands": []
+  },
+  "cockroach_4407": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.5",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/cockroachdb/cockroach",
+    "src_path": "github.com/cockroachdb/cockroach",
+    "pull_sha": "7174fe531297b2e2ff5f3b811c3646d6819bc990",
+    "testfunc": "TestGossipCullNetwork",
+    "workdir": "./gossip",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '87s/\"\\$\\$DIR\"\\/\"\\$\\$OUT\"/\\/go\\/gobench.test/' Makefile"
+    ],
+    "build_commands": [
+      "make testbuild TESTFLAGS=-race PKG=./gossip"
+    ],
+    "post_commands": []
+  },
+  "etcd_11982": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.14",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "go.etcd.io/etcd",
+    "pull_sha": "3082a7d52119960a2bdc0c60566186c54df9bc35",
+    "testfunc": "TestIssue2746WithThree",
+    "workdir": "./integration",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '159 igo test \\${REPO_PATH}/integration -race -c -o /go/gobench.test' test",
+      "sed -i '160 iexit 0' test"
+    ],
+    "build_commands": [
+      "VERBOSE=1 PKG=integration PASSES=integration TESTCASE=TestIssue2746WithThree ./test"
+    ],
+    "post_commands": []
+  },
+  "etcd_3077": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "5be545b872a5a5938f9664668c0022ca877c5439",
+    "testfunc": "TestSyncTrigger",
+    "workdir": "./etcdserver",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '17s/GitSHA /GitSHA=/' build",
+      "sed -i '47 igo test ./etcdserver -race -c -o \\/go\\/gobench.test' test",
+      "sed -i '48 iexit 0' test"
+    ],
+    "build_commands": [
+      "./test"
+    ],
+    "post_commands": []
+  },
+  "etcd_4876": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.6",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "d533c14881d7b69d64047645816d56a61269b844",
+    "testfunc": "TestKVPutFailGetRetry",
+    "workdir": "./clientv3/integration",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '130d' test",
+      "sed -i '127d' test",
+      "sed -i '63 igo test \\${REPO_PATH}/clientv3/integration -race -c -o /go/gobench.test' test",
+      "sed -i '64 iexit 0' test",
+      "sed -i '61,62d' test"
+    ],
+    "build_commands": [
+      "INTEGRATION=1 ./test"
+    ],
+    "post_commands": []
+  },
+  "etcd_8194": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "673c6f065080be10403515826e1c7f58c20dbcd3",
+    "testfunc": "TestLessorRenewExtendPileup",
+    "workdir": "./lease",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '83 igo test ./lease -race -c -o /go/gobench.test' test",
+      "sed -i '84 iexit 0' test"
+    ],
+    "build_commands": [
+      "VERBOSE=1 PKG=./lease PASSES=unit TESTCASE=TestLessorRenewExtendPileup ./test"
+    ],
+    "post_commands": []
+  },
+  "etcd_9446": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/etcd-io/etcd",
+    "src_path": "github.com/coreos/etcd",
+    "pull_sha": "576a2ca501e95f7343df19ad1aa2183058440d57",
+    "testfunc": "TestV3MaintenanceDefragmentInflightRange",
+    "workdir": "./integration",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '133 igo test \\${REPO_PATH}/integration -race -c -o /go/gobench.test' test",
+      "sed -i '134 iexit 0' test"
+    ],
+    "build_commands": [
+      "VERBOSE=1 PKG=integration PASSES=integration TESTCASE=TestV3MaintenanceDefragmentInflightRange ./test"
+    ],
+    "post_commands": []
+  },
+  "grpc_1687": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "c6b46087ab923e9f453ec433f99174cdd45b9b89",
+    "testfunc": "TestHandlerTransport_HandleStreams_WriteStatusWrite",
+    "workdir": "./transport",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./transport -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "grpc_1748": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [
+      "github.com/golang/glog",
+      "github.com/golang/protobuf/proto",
+      "github.com/golang/protobuf/ptypes",
+      "golang.org/x/net/context",
+      "golang.org/x/net/http2",
+      "golang.org/x/net/http2/hpack",
+      "golang.org/x/net/trace",
+      "google.golang.org/genproto/googleapis/rpc/status"
+    ],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "6610f9a3403d6e84b5a585fe27e00f9d7dffca6a",
+    "testfunc": "TestCloseConnectionWhenServerPrefaceNotReceived",
+    "workdir": ".",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "grpc_2371": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "cb11627444a397d423a7e5712c97395a4186f4df",
+    "testfunc": "TestResolverServiceConfigWhileClosingNotPanic",
+    "workdir": ".",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "grpc_3090": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/grpc/grpc-go",
+    "src_path": "google.golang.org/grpc",
+    "pull_sha": "027cd627f8565bf731a6e1bdf54ce79ba09bda5c",
+    "testfunc": "TestResolverErrorInBuild",
+    "workdir": ".",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i 's/func (s) TestResolverErrorInBuild/func TestResolverErrorInBuild/' ./resolver_conn_wrapper_test.go"
+    ],
+    "build_commands": [
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "istio_16742": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "cda495f5093cc917d80f25686c2a16dffcbe85dd",
+    "testfunc": "TestLDSWithWorkloadLabelUpdate",
+    "workdir": "./pilot/pkg/proxy/envoy/v2",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pilot/pkg/proxy/envoy/v2 -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "istio_8144": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "39f7d47451787313c06fafca6918c0b9eda8896d",
+    "testfunc": "TestServerInst_Close",
+    "workdir": "./mixer/adapter/prometheus",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./mixer/adapter/prometheus -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "istio_8214": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "be6aaeb4ede98b198c2c818b38bd3a5a0018304d",
+    "testfunc": "TestReport",
+    "workdir": "./mixer/adapter/list",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./mixer/adapter/list -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "istio_8967": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/istio/istio",
+    "src_path": "istio.io/istio",
+    "pull_sha": "60c1297527cad3f33e2fe0afbb201c551588862e",
+    "testfunc": "TestFsSource_InitialScan",
+    "workdir": "./galley/pkg/fs",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./galley/pkg/fs -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_13058": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "d15de72a92c8841d069b1265e433eb52edc29822",
+    "testfunc": "TestUpdate",
+    "workdir": "./pkg/controller/framework",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '231,247d' hack/lib/golang.sh",
+      "sed -i '204 igo test ./pkg/controller/framework -race -c -o /go/gobench.test' hack/test-go.sh",
+      "sed -i '205 iexit 0' hack/test-go.sh"
+    ],
+    "build_commands": [
+      "make test WHAT=./pkg/controller/framework"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_49404": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "3bae345a958e15fcca25107f8324bf8ca03f38ba",
+    "testfunc": "TestProxyUpgrade$",
+    "workdir": "../kube-aggregator/pkg/apiserver",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "rm -rf ./vendor/k8s.io",
+      "cp -r ./vendor/* /go/src/",
+      "cp -r ./staging/src/k8s.io /go/src/"
+    ],
+    "build_commands": [
+      "cd ../kube-aggregator/pkg/apiserver",
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_70892": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous Function",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "b8fece50f533bdfbf58b638f73e18a5773c3434c",
+    "testfunc": "TestGenericScheduler/test_6",
+    "workdir": "./pkg/scheduler/core",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/scheduler/core -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_73022": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "c999dc3854d7b14aa28b7c61622a8bc2975e5367",
+    "testfunc": "TestPriorityQueue_AssignedPodAdded",
+    "workdir": "./pkg/scheduler/internal/queue",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '286 igo test ./pkg/scheduler/internal/queue -race -c -o /go/gobench.test' hack/make-rules/test.sh",
+      "sed -i '287 iexit 0' hack/make-rules/test.sh"
+    ],
+    "build_commands": [
+      "make test WHAT=./pkg/scheduler/internal/queue"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_77796": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "9b2231a293b57c336455ecf2632603305aae1642",
+    "testfunc": "TestDispatchingBookmarkEventsWithConcurrentStop",
+    "workdir": "../apiserver/pkg/storage/cacher",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "rm -rf ./vendor/k8s.io",
+      "cp -r ./vendor/* /go/src/",
+      "cp -r ./staging/src/k8s.io /go/src/"
+    ],
+    "build_commands": [
+      "cd ../apiserver/pkg/storage/cacher",
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_79631": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "5257266e9be5e757842d7d4e98b4942f90235b8b",
+    "testfunc": "^TestPriorityQueue_AddUnschedulableIfNotPresent_Backoff$",
+    "workdir": "./pkg/scheduler/internal/queue",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/scheduler/internal/queue -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_80284": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "48ddf3be87789c92e6824c9ce536c76d008f5c19",
+    "testfunc": "TestConcurrentUpdateTransportConfig",
+    "workdir": "../client-go/plugin/pkg/client/auth/exec",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "cp -rL ./vendor/* /go/src/"
+    ],
+    "build_commands": [
+      "cd ../client-go",
+      "go test ./plugin/pkg/client/auth/exec -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_81091": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "314aa4f9593d98b159a857ee9b09cd403da6c63e",
+    "testfunc": "^TestGenericScheduler$",
+    "workdir": "./pkg/scheduler/core",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/scheduler/core -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_81148": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "8c6c94bad2ef70c98d38fc5ebb3ad28f173c683b",
+    "testfunc": "TestHighPriorityFlushUnschedulableQLeftover",
+    "workdir": "./pkg/scheduler/internal/queue",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/scheduler/internal/queue -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_82239": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "cedffee93e74f3a7d07b8cd6221e34ac5a033f6f",
+    "testfunc": "TestControllerSync",
+    "workdir": "./pkg/controller/volume/persistentvolume",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/controller/volume/persistentvolume -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_82550": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "25074a190ef2a07d8b0ed38734f2cb373edfb868",
+    "testfunc": "TestConcurrentEcrLazyProvide",
+    "workdir": "./pkg/credentialprovider/aws",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i '287 igo test ./pkg/credentialprovider/aws -race -c -o /go/gobench.test' hack/make-rules/test.sh",
+      "sed -i '288 iexit 0' hack/make-rules/test.sh"
+    ],
+    "build_commands": [
+      "make test WHAT=./pkg/credentialprovider/aws"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_88331": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [
+      "rsync"
+    ],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "f11630840352658c4030de1afe2af0bece0980e7",
+    "testfunc": "TestPriorityQueue_MoveAllToActiveOrBackoffQueue",
+    "workdir": "./pkg/scheduler/internal/queue",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/scheduler/internal/queue -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "kubernetes_89164": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/kubernetes/kubernetes",
+    "src_path": "k8s.io/kubernetes",
+    "pull_sha": "2fa96eca4b92ca384a2f62279c665e2fcb3083b6",
+    "testfunc": "TestDispatchingBookmarkEventsWithConcurrentStop",
+    "workdir": "../apiserver/pkg/storage/cacher",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "rm -rf ./vendor/k8s.io",
+      "cp -r ./vendor/* /go/src/",
+      "cp -r ./staging/src/k8s.io /go/src/"
+    ],
+    "build_commands": [
+      "cd ../apiserver/pkg/storage/cacher",
+      "go test . -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "moby_18412": {
+    "type": "Traditional",
+    "subtype": "Order Violation",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/moby/moby",
+    "src_path": "github.com/moby/moby",
+    "pull_sha": "7c1c96551d41e369a588e365a9bb99acb5bc8fdb",
+    "testfunc": "TestRunCommandWithOutputForDurationKilled",
+    "testenvs": [
+      "TESTFLAGS=./pkg/integration/",
+      "BUILDFLAGS=-race"
+    ],
+    "workdir": ".",
+    "pred_stage_build_command": "make test-unit",
+    "pred_commands": [
+      "sed -i '50s/--rm//' Makefile",
+      "sed -i '50s/MOUNT)/MOUNT) -v \\/go\\/test:\\/go\\/test --name moby_18412_cntr/' Makefile",
+      "sed -i 's/git.fedorahosted.org\\/git/github.com\\/lvmteam/' Dockerfile",
+      "sed -i '31 iRUN apt-get update \\\u0026\\\u0026 apt-get install -y apt-transport-https ca-certificates' Dockerfile",
+      "sed -i '119,127d' Dockerfile",
+      "sed -i '25s/\\$COVER //' hack/make/test-unit",
+      "sed -i '25s/go test.*/\u0026\\n\\t\u0026/' hack/make/test-unit",
+      "sed -i '25s/$/ -i/' hack/make/test-unit",
+      "sed -i '26s/\\$pkg_list//' hack/make/test-unit",
+      "sed -i '26s/$/ -c -o \\/go\\/gobench.test/' hack/make/test-unit"
+    ],
+    "build_commands": [],
+    "post_commands": []
+  },
+  "moby_22941": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous Function",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/moby/moby",
+    "src_path": "github.com/moby/moby",
+    "pull_sha": "f10a222de1cc756bb14d157b778d820fac3561aa",
+    "testfunc": "",
+    "testenvs": [
+      "TESTFLAGS=./cmd/dockerd/hack",
+      "BUILDFLAGS=-race"
+    ],
+    "workdir": ".",
+    "pred_stage_build_command": "make test-unit",
+    "pred_commands": [
+      "sed -i '47s/--rm//' Makefile",
+      "sed -i '47s/MOUNT)/MOUNT) -v \\/go\\/test:\\/go\\/test --name moby_22941_cntr/' Makefile",
+      "sed -i '31 iRUN apt-get update \\\u0026\\\u0026 apt-get install -y apt-transport-https ca-certificates' Dockerfile",
+      "sed -i '26s/\\$COVER //' hack/make/test-unit",
+      "sed -i '26s/go test.*/\u0026\\n\\t\u0026/' hack/make/test-unit",
+      "sed -i '26s/$/ -i/' hack/make/test-unit",
+      "sed -i '27s/\\$pkg_list//' hack/make/test-unit",
+      "sed -i '27s/$/ -c -o \\/go\\/gobench.test/' hack/make/test-unit"
+    ],
+    "build_commands": [],
+    "post_commands": []
+  },
+  "moby_27037": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous Function",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/moby/moby",
+    "src_path": "github.com/moby/moby",
+    "pull_sha": "ba9fb732801cfdcd55dd2a4cfce5ef5e0962fc59",
+    "testenvs": [
+      "BUILDFLAGS=-race",
+      "TESTFLAGS=-test.v -test.count 1 -check.f DockerSuite.TestAPIStatsNetworkStatsVersioning"
+    ],
+    "testfunc": "make test-integration-cli",
+    "workdir": ".",
+    "pred_stage_build_command": "",
+    "pred_commands": [
+      "sed -i 's/crosbymichael/salewski/' Dockerfile",
+      "sed -i '98,108d' Dockerfile"
+    ],
+    "build_commands": [],
+    "post_commands": []
+  },
+  "serving_3068": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "github.com/knative/serving",
+    "pull_sha": "b5e383b3318333cb0d38258be34fc402c33989c7",
+    "testfunc": "TestRacingClose",
+    "workdir": "./pkg/pool",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/pool -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_3148": {
+    "type": "Traditional",
+    "subtype": "Data Race",
+    "goversion": "1.12",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "github.com/knative/serving",
+    "pull_sha": "3f9f91e13f624e2a8b7788e821296eaa6199b38f",
+    "testfunc": "^TestGlobalResyncOnConfigMapUpdateRevision$",
+    "workdir": "./pkg/reconciler/v1alpha1/revision",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/reconciler/v1alpha1/revision -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_3357": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "github.com/knative/serving",
+    "pull_sha": "8c2d150c3177fc307d9770433b2ffc08b5b9f84f",
+    "testfunc": "TestGlobalResyncOnUpdateDomainConfigMap",
+    "workdir": "./pkg/reconciler/v1alpha1/route",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/reconciler/v1alpha1/route -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_4908": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "043aa03e459ce238b5681abf8fb480f4f9d4668e",
+    "testfunc": "TestRevisionWatcher/single_error_dest",
+    "workdir": "./pkg/activator",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/activator -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_4973": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "1d7e60cb3508d62347e2cbafd9fde072f3908ad5",
+    "testfunc": "TestStats",
+    "workdir": "./pkg/activator/handler",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/activator/handler -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_5865": {
+    "type": "Go-Specific",
+    "subtype": "Channel Misuse",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "995194b9504551469776da3bf71f45371b3948f8",
+    "testfunc": "TestRevisionBackendManagerAddEndpoint",
+    "workdir": "./pkg/activator/net",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/activator/net -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_6171": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "85505f738102b2713afc0c534b29ac490c364f27",
+    "testfunc": "TestServiceMoreThanOne",
+    "workdir": "./pkg/activator/net",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/activator/net -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_6472": {
+    "type": "Traditional",
+    "subtype": "Order Violation",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "64346ff289aa6a817ed802a350e2633b5e2c9f9c",
+    "testfunc": "TestPartialPodCancellation",
+    "workdir": "./pkg/network/status",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/network/status -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_7513": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "knative.dev/serving",
+    "pull_sha": "4596520451dc0169d334ea5e62346b8e968374a2",
+    "testfunc": "TestUpdateDomainConfigMap",
+    "workdir": "./pkg/reconciler/route",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/reconciler/route -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  },
+  "serving_7901": {
+    "type": "Go-Specific",
+    "subtype": "Special Libraries",
+    "goversion": "1.13",
+    "dev_deps": [],
+    "pkg_deps": [],
+    "git_deps": [],
+    "repo_url": "https://github.com/knative/serving",
+    "src_path": "github.com/knative/serving",
+    "pull_sha": "5d91bee9539f9051a3e25cf99dc73d4e0bc9829b",
+    "testfunc": "TestControllerCanReconcile",
+    "workdir": "./pkg/reconciler/autoscaling/hpa",
+    "pred_stage_build_command": "",
+    "pred_commands": [],
+    "build_commands": [
+      "go test ./pkg/reconciler/autoscaling/hpa -race -c -o /go/gobench.test"
+    ],
+    "post_commands": []
+  }
+}

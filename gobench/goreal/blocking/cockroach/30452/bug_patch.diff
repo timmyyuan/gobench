@@ -1,0 +1,16 @@
+diff --git a/pkg/storage/replica_test.go b/pkg/storage/replica_test.go
+index 09fe27af3a..3159e7bc7c 100644
+--- a/pkg/storage/replica_test.go
++++ b/pkg/storage/replica_test.go
+@@ -7861,10 +7861,7 @@ func TestReplicaIDChangePending(t *testing.T) {
+ 	repl.mu.Lock()
+ 	repl.mu.submitProposalFn = func(p *ProposalData) error {
+ 		if p.Request.Timestamp == magicTS {
+-			select {
+-			case commandProposed <- struct{}{}:
+-			default:
+-			}
++			commandProposed <- struct{}{}
+ 		}
+ 		return nil
+ 	}

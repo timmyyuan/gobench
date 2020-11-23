@@ -1,0 +1,159 @@
+diff --git a/auth/simple_token.go b/auth/simple_token.go
+index ff48c5140..5b608af92 100644
+--- a/auth/simple_token.go
++++ b/auth/simple_token.go
+@@ -32,26 +32,31 @@ import (
+ const (
+ 	letters                  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+ 	defaultSimpleTokenLength = 16
+ )
+ 
+ // var for testing purposes
+ var (
+ 	simpleTokenTTL           = 5 * time.Minute
+ 	simpleTokenTTLResolution = 1 * time.Second
+ )
+ 
+ type simpleTokenTTLKeeper struct {
+-	tokensMu        sync.Mutex
+-	tokens          map[string]time.Time
+-	stopCh          chan chan struct{}
+-	deleteTokenFunc func(string)
++	tokens              map[string]time.Time
++	addSimpleTokenCh    chan string
++	resetSimpleTokenCh  chan string
++	deleteSimpleTokenCh chan string
++	stopCh              chan chan struct{}
++	deleteTokenFunc     func(string)
+ }
+ 
+ func NewSimpleTokenTTLKeeper(deletefunc func(string)) *simpleTokenTTLKeeper {
+ 	stk := &simpleTokenTTLKeeper{
+-		tokens:          make(map[string]time.Time),
+-		stopCh:          make(chan chan struct{}),
+-		deleteTokenFunc: deletefunc,
++		tokens:              make(map[string]time.Time),
++		addSimpleTokenCh:    make(chan string, 1),
++		resetSimpleTokenCh:  make(chan string, 1),
++		deleteSimpleTokenCh: make(chan string, 1),
++		stopCh:              make(chan chan struct{}),
++		deleteTokenFunc:     deletefunc,
+ 	}
+ 	go stk.run()
+ 	return stk
+@@ -65,34 +66,37 @@ func (tm *simpleTokenTTLKeeper) stop() {
+ }
+ 
+ func (tm *simpleTokenTTLKeeper) addSimpleToken(token string) {
+-	tm.tokens[token] = time.Now().Add(simpleTokenTTL)
++	tm.addSimpleTokenCh <- token
+ }
+ 
+ func (tm *simpleTokenTTLKeeper) resetSimpleToken(token string) {
+-	if _, ok := tm.tokens[token]; ok {
+-		tm.tokens[token] = time.Now().Add(simpleTokenTTL)
+-	}
++	tm.resetSimpleTokenCh <- token
+ }
+ 
+ func (tm *simpleTokenTTLKeeper) deleteSimpleToken(token string) {
+-	delete(tm.tokens, token)
++	tm.deleteSimpleTokenCh <- token
+ }
+-
+ func (tm *simpleTokenTTLKeeper) run() {
+ 	tokenTicker := time.NewTicker(simpleTokenTTLResolution)
+ 	defer tokenTicker.Stop()
+ 	for {
+ 		select {
++		case t := <-tm.addSimpleTokenCh:
++			tm.tokens[t] = time.Now().Add(simpleTokenTTL)
++		case t := <-tm.resetSimpleTokenCh:
++			if _, ok := tm.tokens[t]; ok {
++				tm.tokens[t] = time.Now().Add(simpleTokenTTL)
++			}
++		case t := <-tm.deleteSimpleTokenCh:
++			delete(tm.tokens, t)
+ 		case <-tokenTicker.C:
+ 			nowtime := time.Now()
+-			tm.tokensMu.Lock()
+ 			for t, tokenendtime := range tm.tokens {
+ 				if nowtime.After(tokenendtime) {
+ 					tm.deleteTokenFunc(t)
+ 					delete(tm.tokens, t)
+ 				}
+ 			}
+-			tm.tokensMu.Unlock()
+ 		case waitCh := <-tm.stopCh:
+ 			tm.tokens = make(map[string]time.Time)
+ 			waitCh <- struct{}{}
+@@ -104,7 +108,7 @@ func (tm *simpleTokenTTLKeeper) run() {
+ type tokenSimple struct {
+ 	indexWaiter       func(uint64) <-chan struct{}
+ 	simpleTokenKeeper *simpleTokenTTLKeeper
+-	simpleTokensMu    sync.Mutex
++	simpleTokensMu    sync.RWMutex
+ 	simpleTokens      map[string]string // token -> username
+ }
+ 
+@@ -124,7 +128,6 @@ func (t *tokenSimple) genTokenPrefix() (string, error) {
+ }
+ 
+ func (t *tokenSimple) assignSimpleTokenToUser(username, token string) {
+-	t.simpleTokenKeeper.tokensMu.Lock()
+ 	t.simpleTokensMu.Lock()
+ 
+ 	_, ok := t.simpleTokens[token]
+@@ -135,23 +138,18 @@ func (t *tokenSimple) assignSimpleTokenToUser(username, token string) {
+ 	t.simpleTokens[token] = username
+ 	t.simpleTokenKeeper.addSimpleToken(token)
+ 	t.simpleTokensMu.Unlock()
+-	t.simpleTokenKeeper.tokensMu.Unlock()
+ }
+ 
+ func (t *tokenSimple) invalidateUser(username string) {
+-	if t.simpleTokenKeeper == nil {
+-		return
+-	}
+-	t.simpleTokenKeeper.tokensMu.Lock()
+ 	t.simpleTokensMu.Lock()
++	defer t.simpleTokensMu.Unlock()
++
+ 	for token, name := range t.simpleTokens {
+ 		if strings.Compare(name, username) == 0 {
+ 			delete(t.simpleTokens, token)
+ 			t.simpleTokenKeeper.deleteSimpleToken(token)
+ 		}
+ 	}
+-	t.simpleTokensMu.Unlock()
+-	t.simpleTokenKeeper.tokensMu.Unlock()
+ }
+ 
+ func newDeleterFunc(t *tokenSimple) func(string) {
+@@ -174,6 +172,7 @@ func (t *tokenSimple) disable() {
+ 		t.simpleTokenKeeper.stop()
+ 		t.simpleTokenKeeper = nil
+ 	}
++
+ 	t.simpleTokensMu.Lock()
+ 	t.simpleTokens = make(map[string]string) // invalidate all tokens
+ 	t.simpleTokensMu.Unlock()
+@@ -183,14 +182,14 @@ func (t *tokenSimple) info(ctx context.Context, token string, revision uint64) (
+ 	if !t.isValidSimpleToken(ctx, token) {
+ 		return nil, false
+ 	}
+-	t.simpleTokenKeeper.tokensMu.Lock()
+-	t.simpleTokensMu.Lock()
++
++	t.simpleTokensMu.RLock()
++	defer t.simpleTokensMu.RUnlock()
+ 	username, ok := t.simpleTokens[token]
+ 	if ok {
+ 		t.simpleTokenKeeper.resetSimpleToken(token)
+ 	}
+-	t.simpleTokensMu.Unlock()
+-	t.simpleTokenKeeper.tokensMu.Unlock()
++
+ 	return &AuthInfo{Username: username, Revision: revision}, ok
+ }
+ 

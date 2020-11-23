@@ -1,0 +1,90 @@
+diff --git a/pkg/storage/intent_resolver.go b/pkg/storage/intent_resolver.go
+index 2d7b1c065c..b65798e66b 100644
+--- a/pkg/storage/intent_resolver.go
++++ b/pkg/storage/intent_resolver.go
+@@ -34,12 +34,13 @@ import (
+ 	"golang.org/x/net/context"
+ )
+ 
+-// defaultIntentResolverTaskLimit is the maximum number of asynchronous tasks
++// intentResolverTaskLimit is the maximum number of asynchronous tasks
+ // that may be started by intentResolver. When this limit is reached
+-// asynchronous tasks will start to block to apply backpressure.  This is a
+-// last line of defense against issues like #4925.
++// asynchronous tasks will start to block to apply backpressure.
++// This is a last line of defense against issues like #4925.
+ // TODO(bdarnell): how to determine best value?
+ const defaultIntentResolverTaskLimit = 100
++const intentResolverTaskLimit = 100
+ 
+ // intentResolverBatchSize is the maximum number of intents that will
+ // be resolved in a single batch. Batches that span many ranges (which
+@@ -251,9 +251,7 @@ func (ir *intentResolver) maybePushTransactions(
+ // processing via this method). The two cases are handled somewhat
+ // differently and would be better served by different entry points,
+ // but combining them simplifies the plumbing necessary in Replica.
+-func (ir *intentResolver) processIntentsAsync(
+-	r *Replica, intents []intentsWithArg, allowSyncProcessing bool,
+-) {
++func (ir *intentResolver) processIntentsAsync(r *Replica, intents []intentsWithArg) {
+ 	if r.store.TestingKnobs().DisableAsyncIntentResolution {
+ 		return
+ 	}
+@@ -268,7 +266,7 @@ func (ir *intentResolver) processIntentsAsync(
+ 				ir.processIntents(ctx, r, item, now)
+ 			})
+ 		if err != nil {
+-			if err == stop.ErrThrottled && allowSyncProcessing {
++			if err == stop.ErrThrottled {
+ 				// A limited task was not available. Rather than waiting for one, we
+ 				// reuse the current goroutine.
+ 				ir.processIntents(ctx, r, item, now)
+@@ -466,10 +464,8 @@ func (ir *intentResolver) resolveIntents(
+ 			// TODO(tschottdorf): no tracing here yet.
+ 			return ir.store.DB().Run(ctx, b)
+ 		}
+-		// NB: Don't wait for an async task slot as we might be configured with an
+-		// insufficient number (i.e. 0 or 1).
+ 		if ir.store.Stopper().RunLimitedAsyncTask(
+-			ctx, "storage.intentResolve: resolving intents", ir.sem, false, /* wait */
++			ctx, "storage.intentResolve: resolving intents", ir.sem, true, /* wait */
+ 			func(ctx context.Context) {
+ 				defer wg.Done()
+ 
+diff --git a/pkg/storage/replica.go b/pkg/storage/replica.go
+index 03f4cb50a4..486ea272ba 100644
+--- a/pkg/storage/replica.go
++++ b/pkg/storage/replica.go
+@@ -2413,13 +2413,7 @@ func (r *Replica) executeReadOnlyBatch(
+ 
+ 	if intents := result.Local.detachIntents(pErr != nil); len(intents) > 0 {
+ 		log.Eventf(ctx, "submitting %d intents to asynchronous processing", len(intents))
+-		// Do not allow synchronous intent resolution for RangeLookup requests as
+-		// doing so can deadlock if the request originated from the local node
+-		// which means the local range descriptor cache has an in-flight
+-		// RangeLookup request which prohibits any concurrent requests for the same
+-		// range. See #17760.
+-		_, hasRangeLookup := ba.GetArg(roachpb.RangeLookup)
+-		r.store.intentResolver.processIntentsAsync(r, intents, !hasRangeLookup)
++		r.store.intentResolver.processIntentsAsync(r, intents)
+ 	}
+ 	if pErr != nil {
+ 		log.ErrEvent(ctx, pErr.String())
+@@ -2629,7 +2623,7 @@ func (r *Replica) tryExecuteWriteBatch(
+ 				// both leave intents to GC that don't hit this code path. No good
+ 				// solution presents itself at the moment and such intents will be
+ 				// resolved on reads.
+-				r.store.intentResolver.processIntentsAsync(r, propResult.Intents, true /* allowSync*/)
++				r.store.intentResolver.processIntentsAsync(r, propResult.Intents)
+ 			}
+ 			return propResult.Reply, propResult.Err, propResult.ProposalRetry
+ 		case <-slowTimer.C:
+@@ -5221,7 +5215,7 @@ func (r *Replica) loadSystemConfig(ctx context.Context) (config.SystemConfig, er
+ 		// There were intents, so what we read may not be consistent. Attempt
+ 		// to nudge the intents in case they're expired; next time around we'll
+ 		// hopefully have more luck.
+-		r.store.intentResolver.processIntentsAsync(r, intents, true /* allowSync */)
++		r.store.intentResolver.processIntentsAsync(r, intents)
+ 		return config.SystemConfig{}, errSystemConfigIntent
+ 	}
+ 	kvs := br.Responses[0].GetInner().(*roachpb.ScanResponse).Rows

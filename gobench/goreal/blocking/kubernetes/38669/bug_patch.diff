@@ -1,0 +1,73 @@
+diff --git a/pkg/storage/cacher.go b/pkg/storage/cacher.go
+index a81c71a24a7..6febfac2b00 100644
+--- a/pkg/storage/cacher.go
++++ b/pkg/storage/cacher.go
+@@ -750,7 +750,6 @@ type cacheWatcher struct {
+ 	sync.Mutex
+ 	input   chan watchCacheEvent
+ 	result  chan watch.Event
+-	done    chan struct{}
+ 	filter  watchFilterFunc
+ 	stopped bool
+ 	forget  func(bool)
+@@ -760,7 +759,6 @@ func newCacheWatcher(resourceVersion uint64, chanSize int, initEvents []watchCac
+ 	watcher := &cacheWatcher{
+ 		input:   make(chan watchCacheEvent, chanSize),
+ 		result:  make(chan watch.Event, chanSize),
+-		done:    make(chan struct{}),
+ 		filter:  filter,
+ 		stopped: false,
+ 		forget:  forget,
+@@ -785,7 +783,6 @@ func (c *cacheWatcher) stop() {
+ 	defer c.Unlock()
+ 	if !c.stopped {
+ 		c.stopped = true
+-		close(c.done)
+ 		close(c.input)
+ 	}
+ }
+@@ -850,19 +847,13 @@ func (c *cacheWatcher) sendWatchCacheEvent(event *watchCacheEvent) {
+ 		glog.Errorf("unexpected copy error: %v", err)
+ 		return
+ 	}
+-	var watchEvent watch.Event
+ 	switch {
+ 	case curObjPasses && !oldObjPasses:
+-		watchEvent = watch.Event{Type: watch.Added, Object: object}
++		c.result <- watch.Event{Type: watch.Added, Object: object}
+ 	case curObjPasses && oldObjPasses:
+-		watchEvent = watch.Event{Type: watch.Modified, Object: object}
++		c.result <- watch.Event{Type: watch.Modified, Object: object}
+ 	case !curObjPasses && oldObjPasses:
+-		watchEvent = watch.Event{Type: watch.Deleted, Object: object}
+-	}
+-	select {
+-	case c.result <- watchEvent:
+-	// don't block on c.result if c.done is closed
+-	case <-c.done:
++		c.result <- watch.Event{Type: watch.Deleted, Object: object}
+ 	}
+ }
+ 
+diff --git a/pkg/storage/cacher_whitebox_test.go b/pkg/storage/cacher_whitebox_test.go
+index a40e2dfe882..0405948ac3b 100644
+--- a/pkg/storage/cacher_whitebox_test.go
++++ b/pkg/storage/cacher_whitebox_test.go
+@@ -17,6 +17,8 @@ limitations under the License.
+ package storage
+ 
+ import (
++	"fmt"
++	"runtime/debug"
+ 	"sync"
+ 	"testing"
+ 	"time"
+@@ -51,6 +53,7 @@ func TestCacheWatcherCleanupNotBlockedByResult(t *testing.T) {
+ 		defer lock.RUnlock()
+ 		return count == 2, nil
+ 	}); err != nil {
+-		t.Fatalf("expected forget() to be called twice, because sendWatchCacheEvent should not be blocked by the result channel: %v", err)
++		debug.SetTraceback("all")
++		panic(fmt.Sprintf("expected forget() to be called twice, because sendWatchCacheEvent should not be blocked by the result channel: %v", err))
+ 	}
+ }

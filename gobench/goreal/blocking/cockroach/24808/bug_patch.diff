@@ -1,0 +1,17 @@
+diff --git a/pkg/storage/compactor/compactor.go b/pkg/storage/compactor/compactor.go
+index 241244d300..5328ec12d5 100644
+--- a/pkg/storage/compactor/compactor.go
++++ b/pkg/storage/compactor/compactor.go
+@@ -129,11 +129,7 @@ func NewCompactor(
+ // compactionMinInterval, but only if there are compactions pending.
+ func (c *Compactor) Start(ctx context.Context, tracer opentracing.Tracer, stopper *stop.Stopper) {
+ 	// Wake up immediately to examine the queue and set the bytes queued metric.
+-	select {
+-	// The compactor can already have compactions waiting on it, so don't try to block here.
+-	case c.ch <- struct{}{}:
+-	default:
+-	}
++	c.ch <- struct{}{}
+ 
+ 	stopper.RunWorker(ctx, func(ctx context.Context) {
+ 		var timer timeutil.Timer

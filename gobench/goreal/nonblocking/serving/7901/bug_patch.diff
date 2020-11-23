@@ -1,0 +1,35 @@
+diff --git a/pkg/reconciler/autoscaling/hpa/hpa_test.go b/pkg/reconciler/autoscaling/hpa/hpa_test.go
+index 2c1cf649e..4766bba8b 100644
+--- a/pkg/reconciler/autoscaling/hpa/hpa_test.go
++++ b/pkg/reconciler/autoscaling/hpa/hpa_test.go
+@@ -72,7 +72,7 @@ const (
+ )
+ 
+ func TestControllerCanReconcile(t *testing.T) {
+-	ctx, cancel, infs := SetupFakeContextWithCancel(t)
++	ctx, _ := SetupFakeContext(t)
+ 	ctl := NewController(ctx, configmap.NewStaticWatcher(
+ 		&corev1.ConfigMap{
+ 			ObjectMeta: metav1.ObjectMeta{
+@@ -91,20 +91,11 @@ func TestControllerCanReconcile(t *testing.T) {
+ 			},
+ 		}))
+ 
+-	waitInformers, err := controller.RunInformers(ctx.Done(), infs...)
+-	if err != nil {
+-		t.Fatal("Failed to start informers:", err)
+-	}
+-	defer func() {
+-		cancel()
+-		waitInformers()
+-	}()
+-
+ 	podAutoscaler := pa(testNamespace, testRevision, WithHPAClass)
+ 	fakeservingclient.Get(ctx).AutoscalingV1alpha1().PodAutoscalers(testNamespace).Create(podAutoscaler)
+ 	fakepainformer.Get(ctx).Informer().GetIndexer().Add(podAutoscaler)
+ 
+-	err = ctl.Reconciler.Reconcile(context.Background(), testNamespace+"/"+testRevision)
++	err := ctl.Reconciler.Reconcile(context.Background(), testNamespace+"/"+testRevision)
+ 	if err != nil {
+ 		t.Errorf("Reconcile() = %v", err)
+ 	}

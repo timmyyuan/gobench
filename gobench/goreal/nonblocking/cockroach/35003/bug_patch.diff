@@ -1,0 +1,34 @@
+diff --git a/pkg/kv/txn_coord_sender.go b/pkg/kv/txn_coord_sender.go
+index b80ef2cd5f..afd170d21f 100644
+--- a/pkg/kv/txn_coord_sender.go
++++ b/pkg/kv/txn_coord_sender.go
+@@ -480,8 +480,7 @@ func (tcf *TxnCoordSenderFactory) TransactionalSender(
+ 			// "refreshed away" without the need for a txn restart. Because the
+ 			// span refresher can re-issue batches, it needs to be careful about
+ 			// what parts of the batch it mutates. Any mutation needs to be
+-			// idempotent and should avoid writing to memory when not changing
+-			// it to avoid looking like a data race.
++			// idempotent.
+ 			&tcs.interceptorAlloc.txnCommitter,
+ 			// The metrics recorder sits at the bottom of the stack so that it
+ 			// can observe all transformations performed by other interceptors.
+diff --git a/pkg/kv/txn_interceptor_committer.go b/pkg/kv/txn_interceptor_committer.go
+index ad4c69caef..3e71f6130e 100644
+--- a/pkg/kv/txn_interceptor_committer.go
++++ b/pkg/kv/txn_interceptor_committer.go
+@@ -52,13 +52,8 @@ func (tc *txnCommitter) SendLocked(
+ 		return tc.sendLockedWithElidedEndTransaction(ctx, ba, et)
+ 	}
+ 
+-	// Assign the transaction's key to the Request's header if it isn't already
+-	// set. This is the only place where EndTransactionRequest.Key is assigned,
+-	// but we could be dealing with a re-issued batch after a refresh. Remember,
+-	// the committer is below the span refresh on the interceptor stack.
+-	if et.Key == nil {
+-		et.Key = ba.Txn.Key
+-	}
++	// Assign the transaction's key to the Request's header.
++	et.Key = ba.Txn.Key
+ 
+ 	// Pass the adjusted batch through the wrapped lockedSender.
+ 	return tc.wrapped.SendLocked(ctx, ba)

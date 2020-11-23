@@ -1,0 +1,142 @@
+{
+  "moby_18412": {
+    "type": "Traditional",
+    "subtype": "Order violation"
+  },
+  "grpc_3090": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "grpc_1748": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "etcd_9446": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "etcd_8194": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "etcd_4876": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "istio_16742": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "istio_8214": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "istio_8144": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "serving_6472": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "serving_3148": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_89164": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_88331": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_82550": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_82239": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_81148": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_81091": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_80284": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_79631": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_77796": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "kubernetes_49404": {
+    "type": "Traditional",
+    "subtype": "Data race"
+  },
+  "grpc_2371": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "grpc_1687": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "etcd_3077": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "istio_8967": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "serving_5865": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "serving_3068": {
+    "type": "Go-Specific",
+    "subtype": "Misuse channel"
+  },
+  "cockroach_35501": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous function"
+  },
+  "kubernetes_70892": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous function"
+  },
+  "moby_22941": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous function"
+  },
+  "moby_27037": {
+    "type": "Go-Specific",
+    "subtype": "Anonymous function"
+  },
+  "serving_6171": {
+    "type": "Go-Specific",
+    "subtype": "Testing library"
+  },
+  "serving_4908": {
+    "type": "Go-Specific",
+    "subtype": "Testing library"
+  },
+  "cockroach_4407": {
+    "type": "Go-Specific",
+    "subtype": "WaitGroup"
+  },
+  "kubernetes_13058": {
+    "type": "Go-Specific",
+    "subtype": "WaitGroup"
+  }
+}

@@ -1,0 +1,147 @@
+<div align="center"> <h1>GoBench Artifact Evaluation </h1> </div>
+
+<div align="center"> Created at {{.CreatedTime}} </div>
+
+<div align="center"> <h2>Table IV. Blocking bugs reported in GoBench ("Pre" stands for precision and "Rec" stands for recall). </h2> </div>
+<div> </div>
+
+<style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-8bgf{border-color:inherit;font-style:italic;text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg" align="center">
+    <thead>
+    <tr>
+        <th class="tg-c3ow" rowspan="2">Suite</th>
+        <th class="tg-c3ow" rowspan="2">Bug type</th>
+        <th class="tg-8bgf" colspan="5">goleak</th>
+        <th class="tg-8bgf" colspan="5">go-deadlock</th>
+        <th class="tg-8bgf" colspan="5">dingo-hunter</th>
+    </tr>
+    <tr>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+        <td class="tg-c3ow">#TP</td>
+        <td class="tg-c3ow">#FN</td>
+        <td class="tg-c3ow">#FP</td>
+        <td class="tg-c3ow">Pre (%)</td>
+        <td class="tg-c3ow">Rec (%)</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="tg-c3ow" rowspan="4">GoReal</td>
+        <td class="tg-0pky">Resource deadlock</td>
+        {{range .ItemsGoRealResDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Communication deadlock</td>
+        {{range .ItemsGoRealComDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Mixed deadlock</td>
+        {{range .ItemsGoRealMixDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        {{range .ItemsGoRealBlockingTotal}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-c3ow" rowspan="4">GoKer</td>
+        <td class="tg-0pky">Resource deadlock</td>
+        {{range .ItemsGoKerResDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Communication deadlock</td>
+        {{range .ItemsGoKerComDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Mixed deadlock</td>
+        {{range .ItemsGoKerMixDeadlock}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        {{range .ItemsGoKerBlockingTotal}}<td class="tg-c3ow">{{ . }}</td>{{end}}
+    </tr>
+    </tbody>
+</table>
+
+<div align="center"> <h2> Table V. Non-blocking bugs reported in GoBench. </h2> </div>
+
+<style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-sx07{border-color:#000000;font-style:italic;text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    .tg .tg-wp8o{border-color:#000000;text-align:center;vertical-align:top}
+    .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg" align="center">
+    <thead>
+    <tr>
+        <th class="tg-c3ow" rowspan="2">Suite</th>
+        <th class="tg-c3ow" rowspan="2">Bug type</th>
+        <th class="tg-sx07" colspan="5">Go-rd</th>
+    </tr>
+    <tr>
+        <td class="tg-wp8o">#TP</td>
+        <td class="tg-wp8o">#FN</td>
+        <td class="tg-wp8o">#FP</td>
+        <td class="tg-wp8o">Pre (%)</td>
+        <td class="tg-wp8o">Rec (%)</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="tg-c3ow" rowspan="3">GoReal</td>
+        <td class="tg-0pky">Traditional<br></td>
+        {{range .ItemsGoRealTraditional}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Go-Specific<br></td>
+        {{range .ItemsGoRealGoSpecifiic}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        {{range .ItemsGoRealNonBlockingTotal}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-c3ow" rowspan="3">GoKer</td>
+        <td class="tg-0pky">Traditional</td>
+        {{range .ItemsGoKerTraditional}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Go-Specific<br></td>
+        {{range .ItemsGoKerGoSpecifiic}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    <tr>
+        <td class="tg-0pky">Total</td>
+        {{range .ItemsGoKerNonBlockingTotal}}<td class="tg-wp8o">{{ . }}</td>{{end}}
+    </tr>
+    </tbody>
+</table>
+
+<div align="center">
+    <h2> Fig.10 Percentage distribution for the (average) number of runs falling
+        into each of the four given intervals that is needed by a tool in finding a bug </h2> </div>
+<table align="center"><tr>
+    <td><img src="./{{.GoRealFig10}}" /></td>
+    <td><img src="./{{.GoKerFig10}}" /></td>
+</tr></table>

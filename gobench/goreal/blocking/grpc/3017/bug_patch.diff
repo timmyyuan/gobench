@@ -1,0 +1,49 @@
+diff --git a/balancer/grpclb/grpclb_util.go b/balancer/grpclb/grpclb_util.go
+index 6d44ae5c..2663c37e 100644
+--- a/balancer/grpclb/grpclb_util.go
++++ b/balancer/grpclb/grpclb_util.go
+@@ -173,13 +173,13 @@ func (ccc *lbCacheClientConn) RemoveSubConn(sc balancer.SubConn) {
+ 
+ 	timer := time.AfterFunc(ccc.timeout, func() {
+ 		ccc.mu.Lock()
+-		defer ccc.mu.Unlock()
+ 		if entry.abortDeleting {
+ 			return
+ 		}
+ 		ccc.cc.RemoveSubConn(sc)
+ 		delete(ccc.subConnToAddr, sc)
+ 		delete(ccc.subConnCache, addr)
++		ccc.mu.Unlock()
+ 	})
+ 	entry.cancel = func() {
+ 		if !timer.Stop() {
+diff --git a/balancer/grpclb/grpclb_util_test.go b/balancer/grpclb/grpclb_util_test.go
+index 0037b3d9..90f76f51 100644
+--- a/balancer/grpclb/grpclb_util_test.go
++++ b/balancer/grpclb/grpclb_util_test.go
+@@ -20,12 +20,12 @@ package grpclb
+ 
+ import (
+ 	"fmt"
++	"google.golang.org/grpc/balancer"
++	"google.golang.org/grpc/resolver"
++	"runtime/debug"
+ 	"sync"
+ 	"testing"
+ 	"time"
+-
+-	"google.golang.org/grpc/balancer"
+-	"google.golang.org/grpc/resolver"
+ )
+ 
+ type mockSubConn struct {
+@@ -256,7 +256,8 @@ func TestLBCache_RemoveTimer_New_Race(t *testing.T) {
+ 
+ 	select {
+ 	case <-time.After(time.Second):
+-		t.Fatalf("Test didn't finish within 1 second. Deadlock")
++		debug.SetTraceback("all")
++		panic("Test didn't finish within 1 second. Deadlock")
+ 	case <-done:
+ 	}
+ }

@@ -1,0 +1,22 @@
+diff --git a/pkg/storage/etcd3/watcher.go b/pkg/storage/etcd3/watcher.go
+index abff8a5006..6d1490c01d 100644
+--- a/pkg/storage/etcd3/watcher.go
++++ b/pkg/storage/etcd3/watcher.go
+@@ -110,14 +110,11 @@ func (wc *watchChan) run() {
+ 	select {
+ 	case err := <-wc.errChan:
+ 		errResult := parseError(err)
++		wc.cancel()
++		// error result is guaranteed to be received by user before closing ResultChan.
+ 		if errResult != nil {
+-			// error result is guaranteed to be received by user before closing ResultChan.
+-			select {
+-			case wc.resultChan <- *errResult:
+-			case <-wc.ctx.Done(): // user has given up all results
+-			}
++			wc.resultChan <- *errResult
+ 		}
+-		wc.cancel()
+ 	case <-wc.ctx.Done():
+ 	}
+ 	// we need to wait until resultChan wouldn't be sent to anymore

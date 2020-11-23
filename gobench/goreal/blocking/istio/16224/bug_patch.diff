@@ -1,0 +1,22 @@
+diff --git a/pilot/pkg/config/memory/monitor_test.go b/pilot/pkg/config/memory/monitor_test.go
+index f8178d92d..5b7ba3b74 100644
+--- a/pilot/pkg/config/memory/monitor_test.go
++++ b/pilot/pkg/config/memory/monitor_test.go
+@@ -37,14 +37,13 @@ func TestEventConsistency(t *testing.T) {
+ 	controller.RegisterEventHandler(model.MockConfig.Type, func(config model.Config, event model.Event) {
+ 
+ 		lock.Lock()
+-		tc := testConfig
+-		lock.Unlock()
++		defer lock.Unlock()
+ 
+ 		if event != testEvent {
+ 			t.Errorf("desired %v, but %v", testEvent, event)
+ 		}
+-		if !mock.Compare(tc, config) {
+-			t.Errorf("desired %v, but %v", tc, config)
++		if !mock.Compare(testConfig, config) {
++			t.Errorf("desired %v, but %v", testConfig, config)
+ 		}
+ 		done <- true
+ 	})

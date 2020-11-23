@@ -1,0 +1,51 @@
+diff --git a/pkg/cache/ttlCache.go b/pkg/cache/ttlCache.go
+index f64f8f853..2289e182c 100644
+--- a/pkg/cache/ttlCache.go
++++ b/pkg/cache/ttlCache.go
+@@ -212,11 +212,5 @@ func (c *ttlCache) RemoveAll() {
+ }
+ 
+ func (c *ttlCache) Stats() Stats {
+-	return Stats{
+-		Evictions: atomic.LoadUint64(&c.stats.Evictions),
+-		Hits:      atomic.LoadUint64(&c.stats.Hits),
+-		Misses:    atomic.LoadUint64(&c.stats.Misses),
+-		Writes:    atomic.LoadUint64(&c.stats.Writes),
+-		Removals:  atomic.LoadUint64(&c.stats.Removals),
+-	}
++	return c.stats
+ }
+diff --git a/pkg/cache/ttlCache_test.go b/pkg/cache/ttlCache_test.go
+index 81a30255f..3779c78e7 100644
+--- a/pkg/cache/ttlCache_test.go
++++ b/pkg/cache/ttlCache_test.go
+@@ -15,7 +15,6 @@
+ package cache
+ 
+ import (
+-	"sync/atomic"
+ 	"testing"
+ 	"time"
+ )
+@@ -46,18 +45,18 @@ func TestTTLEvictExpired(t *testing.T) {
+ }
+ 
+ type callbackRecorder struct {
+-	callbacks int64
++	callbacks int
+ }
+ 
+ func (c *callbackRecorder) callback(key, value interface{}) {
+-	atomic.AddInt64(&c.callbacks, 1)
++	c.callbacks++
+ }
+ 
+ func TestTTLEvictionCallback(t *testing.T) {
+ 	c := &callbackRecorder{callbacks: 0}
+ 	ttl := NewTTLWithCallback(50*time.Millisecond, time.Millisecond, c.callback)
+ 	testCacheEvicter(ttl, t)
+-	if atomic.LoadInt64(&c.callbacks) != 1 {
++	if c.callbacks != 1 {
+ 		t.Errorf("evictExpired() => failed to invoke EvictionCallback: got %d callbacks, wanted 1", c.callbacks)
+ 	}
+ }
