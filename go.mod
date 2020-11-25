@@ -1,4 +1,4 @@
-module gobench
+module github.com/timmyyuan/gobench
 
 go 1.13
 
