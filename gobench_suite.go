@@ -16,6 +16,7 @@ type SuiteConfig struct {
 	Type     SubBenchType
 	BugIDs   []string
 	MustFork bool
+	WorkDirName string
 	Jobs     int
 
 	ExecutorCreator func(config ExecBugConfig) Executor
@@ -70,11 +71,15 @@ func NewSuite(config SuiteConfig) *Suite {
 }
 
 func (s *Suite) WorkDir() string {
+	basename := fmt.Sprintf("gobench-%s", s.Name)
+	if s.WorkDirName == "" {
+		return filepath.Join(os.TempDir(), basename)
+	}
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
-	return filepath.Join(dir, "gobench-tmp", fmt.Sprintf("gobench-%s", s.Name))
+	return filepath.Join(dir, s.WorkDirName, basename)
 }
 
 func (s *Suite) build() {

@@ -250,9 +250,12 @@ func copyAbsolutely(src string, dst string) {
 		log.Fatal(err)
 	}
 	*/
-	options := grsync.RsyncOptions{Recursive: true}
+	options := grsync.RsyncOptions{
+		Recursive: true,
+		CHMOD: 777,
+	}
 	if IsFile(src) {
-		options = grsync.RsyncOptions{}
+		options.Recursive = false
 	}
 	task := grsync.NewTask(src, filepath.Dir(dst), options)
 	if err := task.Run(); err != nil {
