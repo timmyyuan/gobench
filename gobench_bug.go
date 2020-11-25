@@ -256,7 +256,7 @@ func copyAbsolutely(src string, dst string) {
 	}
 	task := grsync.NewTask(src, filepath.Dir(dst), options)
 	if err := task.Run(); err != nil {
-		log.Printf("Move %v to %v\n", src, filepath.Dir(dst))
+		log.Printf("Copy %v to %v\n", src, filepath.Dir(dst))
 		task.Log()
 		panic(err)
 	}

@@ -3,6 +3,7 @@ package gobench
 import (
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
@@ -69,7 +70,11 @@ func NewSuite(config SuiteConfig) *Suite {
 }
 
 func (s *Suite) WorkDir() string {
-	return filepath.Join(filepath.Dir(BackupPath), "evaluation", fmt.Sprintf("gobench-%s", s.Name))
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Join(dir, "gobench-tmp", fmt.Sprintf("gobench-%s", s.Name))
 }
 
 func (s *Suite) build() {
