@@ -252,7 +252,7 @@ func copyAbsolutely(src string, dst string) {
 	*/
 	options := grsync.RsyncOptions{
 		Recursive: true,
-		CHMOD: 777,
+		CHMOD: 0777,
 	}
 	if IsFile(src) {
 		options.Recursive = false
