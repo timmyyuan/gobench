@@ -166,7 +166,7 @@ func WriteToJson(suites map[string]*Suite, isGoKer bool, isBlocking bool) {
 		data[r.Name] = r
 	}
 
-	dir := filepath.Join(os.Getenv("GOBENCH_ROOT_PATH"), "result")
+	dir := filepath.Join(GOBENCH_ROOT_PATH, "result")
 	if IsNotExists(dir) {
 		err := os.Mkdir(dir, 0700)
 		if err != nil {
@@ -241,7 +241,7 @@ func PlotFig10(suites map[string]*Suite, isGoKer bool) {
 	ioutil.WriteFile(file, b, 0644)
 
 	cmd := exec.Command("python3", "plot.py")
-	cmd.Dir = os.Getenv("GOBENCH_ROOT_PATH")
+	cmd.Dir = GOBENCH_ROOT_PATH
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Println(string(out))
 		panic(string(out))

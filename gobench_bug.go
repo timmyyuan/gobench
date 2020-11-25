@@ -8,17 +8,24 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 )
+
+var GOBENCH_ROOT_PATH string
 
 var BackupPath, ConfigPath, TestPath string
 var GoBenchBugSet *BugSet
 
 func init() {
 	log.SetFlags(log.Llongfile)
-	BackupPath = filepath.Join(os.Getenv("GOBENCH_ROOT_PATH"), "gobench")
-	TestPath = filepath.Join(os.Getenv("GOBENCH_ROOT_PATH"), "gobench-test")
+
+	_, filename, _, _ := runtime.Caller(0)
+	GOBENCH_ROOT_PATH = filepath.Dir(filename)
+
+	BackupPath = filepath.Join(GOBENCH_ROOT_PATH, "gobench")
+	TestPath = filepath.Join(GOBENCH_ROOT_PATH, "gobench-test")
 	GoBenchBugSet = newGoBench()
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/timmyyuan/gobench"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -68,7 +69,7 @@ func load(filename string) map[string]Entry {
 func newdata() Data {
 	d := Data{}
 
-	root := filepath.Join(os.Getenv("GOBENCH_ROOT_PATH"), "result")
+	root := filepath.Join(gobench.GOBENCH_ROOT_PATH, "result")
 	figs := []string{
 		"fig10.goreal.png",
 		"fig10.goker.png",
@@ -140,7 +141,7 @@ func newdata() Data {
 }
 
 func main() {
-	root := filepath.Join(os.Getenv("GOBENCH_ROOT_PATH"), "cmd", "pdf")
+	root := filepath.Join(gobench.GOBENCH_ROOT_PATH, "cmd", "pdf")
 
 	t, err := template.ParseFiles(filepath.Join(root, "index.template"))
 	if err != nil {
