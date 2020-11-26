@@ -178,7 +178,7 @@ func (b Bug) Dir() string {
 
 func (b *Bug) fork(dir string) {
 	if b.forkedPath != "" {
-		rsyncSrcToDst(b.frozenPath, b.forkedPath)
+		rsyncSrcToDst(b.frozenPath, b.forkedPath, true)
 		return
 	}
 
@@ -192,7 +192,7 @@ func (b *Bug) fork(dir string) {
 
 	project, id := SplitBugID(b.ID)
 	b.forkedPath = filepath.Join(dir, b.Type.String(), project, id)
-	rsyncSrcToDst(b.frozenPath, b.forkedPath)
+	rsyncSrcToDst(b.frozenPath, b.forkedPath, false)
 }
 
 func isNumberOnly(bugid string) bool {
@@ -241,7 +241,7 @@ func BugID(path string) string {
 	return project + "_" + id
 }
 
-func rsyncSrcToDst(src string, dst string) {
+func rsyncSrcToDst(src string, dst string, force bool) {
 	args := []string{
 		"rsync",
 		"-raz",
@@ -254,6 +254,11 @@ func rsyncSrcToDst(src string, dst string) {
 	}
 	if IsFile(src) {
 		args[1] = "-az"
+	}
+
+	if !force {
+		dst = filepath.Dir(dst)
+		args[len(args) - 1] = dst
 	}
 
 	if _, err := os.Stat(dst); os.IsNotExist(err) {

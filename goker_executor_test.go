@@ -4,8 +4,44 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+	"strings"
 	"time"
 )
+
+func TestGoKerWithSuite(t *testing.T) {
+	bugid := "etcd_4876"
+	s := NewSuite(SuiteConfig{
+		ExecEnvConfig: ExecEnvConfig{
+			Count:   1,
+			Timeout: 5 * time.Second,
+			Repeat:  2,
+			PositiveCheckFunc: func(r *SingleRunResult) bool {
+				return strings.Contains(string(r.Logs), "DATA RACE")
+			},
+		},
+		Name:   "go-rd",
+		Type:   GoKerNonBlocking,
+		BugIDs: []string{bugid},
+	})
+
+	s.Run()
+
+	result := s.GetResult(bugid)
+
+	if !result.IsPositive() {
+		t.Fatalf("Expect the test of %s being positive\n", bugid)
+	}
+
+	logfile := filepath.Join(result.OutputDir, "full.log")
+	out, err := ioutil.ReadFile(logfile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(string(out), "DATA RACE") {
+		t.Fatal("Expect 'DATA RACE' in the full log file", " ", logfile)
+	}
+}
 
 func TestGoKerSingleTestToRun(t *testing.T) {
 	tests := []string{"hugo_5379"}
