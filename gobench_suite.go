@@ -37,6 +37,10 @@ func NewSuite(config SuiteConfig) *Suite {
 		SuiteConfig: config,
 	}
 
+	if s.Jobs <= 0 {
+		s.Jobs = runtime.GOMAXPROCS(0)
+	}
+
 	var bugs []Bug
 	allBugs := GoBenchBugSet.ListByTypes(s.Type)
 	if len(s.BugIDs) == 0 {

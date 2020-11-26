@@ -33,8 +33,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/<anonymous>/gobench"
-	"strings"
+	"github.com/timmyyuan/gobench"
+	"path/filepath"
+    "strings"
 	"time"
 )
 
@@ -57,8 +58,11 @@ func main() {
 	})
 	
 	s.Run()
-	
-	if s.GetResult("etcd_4876").IsPositive() {
+
+	result := s.GetResult("etcd_4876")
+    fmt.Printf("etcd_4876 logs -> %s\n", filepath.Join(result.OutputDir, "full.log"))
+
+	if result.IsPositive() {
 		fmt.Println("OK, we reproduced etcd_4876 in GoBench (GoKer)")
 	} else {
 		fmt.Println("Sorry, we failed to reproduce etcd_4876 in GoBench (GoKer)")
