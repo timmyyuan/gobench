@@ -3,10 +3,10 @@ package gobench
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/zloylos/grsync"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -178,7 +178,7 @@ func (b Bug) Dir() string {
 
 func (b *Bug) fork(dir string) {
 	if b.forkedPath != "" {
-		copyAbsolutely(b.frozenPath, b.forkedPath)
+		rsyncSrcToDst(b.frozenPath, b.forkedPath)
 		return
 	}
 
@@ -192,7 +192,7 @@ func (b *Bug) fork(dir string) {
 
 	project, id := SplitBugID(b.ID)
 	b.forkedPath = filepath.Join(dir, b.Type.String(), project, id)
-	copyAbsolutely(b.frozenPath, b.forkedPath)
+	rsyncSrcToDst(b.frozenPath, b.forkedPath)
 }
 
 func isNumberOnly(bugid string) bool {
@@ -241,26 +241,28 @@ func BugID(path string) string {
 	return project + "_" + id
 }
 
-func copyAbsolutely(src string, dst string) {
-	/* rsync can handle this situation so we do not
-	   need build images every time.
-	if err := os.RemoveAll(dst); err != nil {
-		pwd, _ := os.Getwd()
-		log.Println("Curdir = ", pwd)
-		log.Fatal(err)
-	}
-	*/
-	options := grsync.RsyncOptions{
-		Recursive: true,
-		CHMOD: 0777,
+func rsyncSrcToDst(src string, dst string) {
+	args := []string{
+		"rsync",
+		"-raz",
+		"--chmod=777",
+		"--no-owner",
+		"--no-group",
+		"--no-perms",
+		src,
+		dst,
 	}
 	if IsFile(src) {
-		options.Recursive = false
+		args[1] = "-az"
 	}
-	task := grsync.NewTask(src, filepath.Dir(dst), options)
-	if err := task.Run(); err != nil {
-		log.Printf("Copy %v to %v\n", src, filepath.Dir(dst))
-		task.Log()
-		panic(err)
+
+	if _, err := os.Stat(dst); os.IsNotExist(err) {
+		if err := os.MkdirAll(dst, 0777); err != nil {
+			panic(err)
+		}
+	}
+
+	if out, err := exec.Command(args[0], args[1:]...).CombinedOutput(); err != nil {
+		panic(fmt.Errorf("%s\n%v", out, err))
 	}
 }
