@@ -245,7 +245,7 @@ func rsyncSrcToDst(src string, dst string, force bool) {
 	args := []string{
 		"rsync",
 		"-raz",
-		"--chmod=777",
+		"--chmod=a+rwx",
 		"--no-owner",
 		"--no-group",
 		"--no-perms",

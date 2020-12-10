@@ -1,4 +1,4 @@
-export GOBENCH_ROOT_PATH=$(shell pwd)
+export GOBENCH_ROOT_PATH=/root/gobench
 MOUNT_DOCKER=-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker
 MOUNT_GOBENCH=-v $(shell pwd):/root/gobench
 

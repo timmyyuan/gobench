@@ -24,9 +24,15 @@ Results can be found in [artifact.pdf]
 
 [artifact.pdf]:artifact.pdf
 
+## Prequisites
+
+* OS: `Linux`, `MacOS`
+
+* Software: `go 1.13+` and `rsync`
+
 ## Call GoBench in Go
 
-There is a example for calling GoBench in Go
+There is an example for GoBench harness API
 
 ```go
 package main
@@ -35,32 +41,32 @@ import (
 	"fmt"
 	"github.com/timmyyuan/gobench"
 	"path/filepath"
-    "strings"
+	"strings"
 	"time"
 )
 
 func main() {
 	s := gobench.NewSuite(gobench.SuiteConfig{
-		ExecEnvConfig:   gobench.ExecEnvConfig{
-			Count:             1,
-			Timeout:           5 * time.Second,
-			Repeat:            2,
+		ExecEnvConfig: gobench.ExecEnvConfig{
+			Count:   1,
+			Timeout: 5 * time.Second,
+			Repeat:  2,
 			PositiveCheckFunc: func(r *gobench.SingleRunResult) bool {
 				return strings.Contains(string(r.Logs), "DATA RACE")
 			},
 		},
-		Name:            "go-rd",
-		Type:            gobench.GoKerNonBlocking,
-		BugIDs:          []string{"etcd_4876"},
+		Name:   "go-rd",
+		Type:   gobench.GoKerNonBlocking,
+		BugIDs: []string{"etcd_4876"},
 		SetUpFunc: func() {
 			// You can do some changes for etcd_4876 here before start the suite.
 		},
 	})
-	
+
 	s.Run()
 
 	result := s.GetResult("etcd_4876")
-    fmt.Printf("etcd_4876 logs -> %s\n", filepath.Join(result.OutputDir, "full.log"))
+	fmt.Printf("etcd_4876 logs -> %s\n", filepath.Join(result.OutputDir, "full.log"))
 
 	if result.IsPositive() {
 		fmt.Println("OK, we reproduced etcd_4876 in GoBench (GoKer)")
@@ -69,3 +75,10 @@ func main() {
 	}
 }
 ```
+
+You can find this example in `gobench/examples`. Run it by:
+
+```
+go run gobench/examples/goker/main.go
+```
+
