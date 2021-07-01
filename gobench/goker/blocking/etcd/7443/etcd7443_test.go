@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 	"testing"
-	"time"
 )
 
 type addrConn struct {
@@ -155,12 +154,17 @@ func (b *simpleBalancer) Up(addr Address) func() {
 	}
 
 	return func() {
+		defer func() {
+			if r := recover(); r != nil {
+				return
+			}
+		}()
 		b.mu.Lock()
+		defer b.mu.Unlock()
 		if b.pinAddr == addr {
 			b.pinAddr = 0
 			b.notifyCh <- b.addrs
 		}
-		b.mu.Unlock()
 	}
 }
 
@@ -200,9 +204,6 @@ func WithBalancer(b Balancer) DialOption {
 func TestEtcd7443(t *testing.T) {
 	sb := newSimpleBalancer()
 	conn := Dial(WithBalancer(sb))
-
-	// Avoid data race addrConn.tearDown() and simpleBalancer.Close()
-	time.Sleep(300 * time.Nanosecond)
 
 	closec := make(chan struct{})
 	go func() {
