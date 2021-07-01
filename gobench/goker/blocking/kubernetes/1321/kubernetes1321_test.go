@@ -23,6 +23,8 @@ import (
 	"testing"
 )
 
+var globalMtx sync.Mutex
+
 type muxWatcher struct {
 	result chan struct{}
 	m      *Mux
@@ -52,7 +54,9 @@ func (m *Mux) Watch() *muxWatcher {
 		m:      m,
 		id:     int64(len(m.watchers)),
 	}
+	globalMtx.Lock()
 	m.watchers[mw.id] = mw
+	globalMtx.Unlock()
 	return mw
 }
 
@@ -65,9 +69,11 @@ func (m *Mux) loop() {
 func (m *Mux) distribute() {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+	globalMtx.Lock()
 	for _, w := range m.watchers {
 		w.result <- struct{}{} // blocked here
 	}
+	globalMtx.Unlock()
 }
 
 func (m *Mux) stopWatching(id int64) {
