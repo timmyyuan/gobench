@@ -109,14 +109,16 @@ func addOrUpdateUnschedulablePod(p *PriorityQueue, pod Pod) {
 }
 
 func TestKubernetes81148(t *testing.T) {
+	stop := make(chan struct{})
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		q := NewPriorityQueue(nil)
+		q := NewPriorityQueue(stop)
 		highPod := Pod("1")
 		addOrUpdateUnschedulablePod(q, highPod)
 		q.unschedulableQ.podInfoMap[GetPodFullName(highPod)].Timestamp = time.Now().Add(-1 * unschedulableQTimeInterval)
 	}()
 	wg.Wait()
+	close(stop)
 }
