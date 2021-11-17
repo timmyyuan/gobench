@@ -158,16 +158,22 @@ func TestCockroach7504(t *testing.T) {
 	}
 
 	mgr := NewLeaseManager(nc, ts)
-
+	var wg sync.WaitGroup
+	
+	wg.Add(2)
 	// G1
 	go func() {
 		// lock AB
 		mgr.AcquireByName(0)
+		wg.Done()
 	}()
 
 	// G2
 	go func() {
 		// lock BA
 		mgr.Release(lset.find(0))
+		wg.Done()
 	}()
+	
+	wg.Wait()
 }
