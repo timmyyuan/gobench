@@ -30,7 +30,7 @@ import (
 	"testing"
 )
 
-var HelpCond *sync.Cond
+var HelpCh chan struct{}
 
 type Balancer interface {
 	Start()
@@ -50,7 +50,7 @@ func (rr *roundRobin) Start() {
 		for i := 0; i < 100; i++ {
 			rr.watchAddrUpdates()
 		}
-		HelpCond.Signal()
+		close(HelpCh)
 	}()
 }
 
@@ -154,14 +154,12 @@ func NewClientConn() *ClientConn {
 /// ----------------------G2, G3 deadlock-----------------------
 ///
 func TestGrpc1353(t *testing.T) {
-	HelpCond := sync.NewCond(&sync.Mutex{})
+	HelpCh = make(chan struct{})
 	cc := NewClientConn()
 	cc.dopts.balancer.Start() // G1
 	go cc.lbWatcher()         // G3
 	go func() {
-		HelpCond.L.Lock()
-		HelpCond.Wait()
-		HelpCond.L.Unlock()
+		<-HelpCh
 		cc.dopts.balancer.Close()
 	}()
 }
