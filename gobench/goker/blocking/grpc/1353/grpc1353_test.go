@@ -28,8 +28,9 @@ package grpc1353
 import (
 	"sync"
 	"testing"
-	"time"
 )
+
+var HelpCond *sync.Cond
 
 type Balancer interface {
 	Start()
@@ -49,6 +50,7 @@ func (rr *roundRobin) Start() {
 		for i := 0; i < 100; i++ {
 			rr.watchAddrUpdates()
 		}
+		HelpCond.Signal()
 	}()
 }
 
@@ -152,11 +154,14 @@ func NewClientConn() *ClientConn {
 /// ----------------------G2, G3 deadlock-----------------------
 ///
 func TestGrpc1353(t *testing.T) {
+	HelpCond := sync.NewCond(&sync.Mutex{})
 	cc := NewClientConn()
 	cc.dopts.balancer.Start() // G1
 	go cc.lbWatcher()         // G3
 	go func() {
-		time.Sleep(300 * time.Nanosecond)
+		HelpCond.L.Lock()
+		HelpCond.Wait()
+		HelpCond.L.Unlock()
 		cc.dopts.balancer.Close()
 	}()
 }
