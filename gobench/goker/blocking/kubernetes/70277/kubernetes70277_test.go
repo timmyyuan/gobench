@@ -73,7 +73,6 @@ func TestKubernetes70277(t *testing.T) {
 		doneCh = done
 		return waitFunc(done)
 	}, func() (bool, error) {
-		time.Sleep(10 * time.Millisecond)
 		return true, nil
 	}, stopCh)
 
