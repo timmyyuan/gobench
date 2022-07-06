@@ -20,7 +20,6 @@ package etcd7902
 import (
 	"sync"
 	"testing"
-	"time"
 )
 
 type roundClient struct {
@@ -64,7 +63,6 @@ func doRounds(rcs []roundClient, rounds int) {
 				mu.Lock()
 				rc.validate()
 				mu.Unlock()
-				time.Sleep(10 * time.Millisecond)
 				rc.progress++
 				mu.Lock() // Leader is blocking here
 				rc.release()
