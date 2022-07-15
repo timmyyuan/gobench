@@ -20,7 +20,6 @@ import (
 	"math/rand"
 	"sync"
 	"testing"
-	"time"
 )
 
 type Progress struct{}
@@ -111,7 +110,6 @@ func testTransfer() {
 	progressChan := make(chan Progress)
 	progressDone := make(chan struct{})
 	go func() { // G3
-		time.Sleep(1 * time.Millisecond)
 		for p := range progressChan { /// Chan consumer
 			if rand.Int31n(2) >= 1 {
 				return
@@ -120,13 +118,11 @@ func testTransfer() {
 		}
 		close(progressDone)
 	}()
-	time.Sleep(1 * time.Millisecond)
 	ids := []string{"id1", "id2", "id3"}
 	xrefs := make([]*Transfer, len(ids))
 	watchers := make([]*Watcher, len(ids))
 	for i := range ids {
 		xrefs[i], watchers[i] = tm.Transfer(ChanOutput(progressChan)) /// Chan producer
-		time.Sleep(2 * time.Millisecond)
 	}
 
 	for i := range xrefs {

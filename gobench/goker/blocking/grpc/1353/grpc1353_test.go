@@ -28,8 +28,9 @@ package grpc1353
 import (
 	"sync"
 	"testing"
-	"time"
 )
+
+var HelpCh chan struct{}
 
 type Balancer interface {
 	Start()
@@ -49,6 +50,7 @@ func (rr *roundRobin) Start() {
 		for i := 0; i < 100; i++ {
 			rr.watchAddrUpdates()
 		}
+		close(HelpCh)
 	}()
 }
 
@@ -152,11 +154,12 @@ func NewClientConn() *ClientConn {
 /// ----------------------G2, G3 deadlock-----------------------
 ///
 func TestGrpc1353(t *testing.T) {
+	HelpCh = make(chan struct{})
 	cc := NewClientConn()
 	cc.dopts.balancer.Start() // G1
 	go cc.lbWatcher()         // G3
 	go func() {
-		time.Sleep(300 * time.Nanosecond)
+		<-HelpCh
 		cc.dopts.balancer.Close()
 	}()
 }
