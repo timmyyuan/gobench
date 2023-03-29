@@ -38,3 +38,4 @@ Goroutine 10 (running) created at:
       /root/gobench/goker/nonblocking/etcd/8194/etcd8194_test.go:68 +0x5b
 ```
 
+As for data races, when the first data race occurs, subsequent program states will exhibit inconsistent behavior. Other possible detection reports that this test case may produce can be found [here](https://github.com/timmyyuan/gobench/issues/8).
