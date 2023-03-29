@@ -23,3 +23,5 @@ command-line-arguments.TestServing3068.func1(0x6341a0, 0xc000116300, 0xc00011e08
 created by command-line-arguments.TestServing3068
 	/root/gobench/goker/nonblocking/serving/3068/serving3068_test.go:63 +0x11e
 ```
+
+It is important to note that utilizing a higher version of Go compiler (e.g. Go 1.16+) may result in varying reports. For those who are interested, please follow this [issue](https://github.com/timmyyuan/gobench/issues/10) to acquire further insights.
