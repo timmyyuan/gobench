@@ -38,3 +38,5 @@ command-line-arguments.(*Stopper).RunWorker.func1(0xc0000ea400, 0xc0000e42c0)
 created by command-line-arguments.(*Stopper).RunWorker
 	/root/gobench/gobench/goker/blocking/cockroach/1462/cockroach1462_test.go:29 +0x67
 ```
+
+The test cases used here have omitted more details compared to the actual code in the real word project. This could potentially introduce new bugs. You can find further discussions regarding this matter [here](https://github.com/timmyyuan/gobench/issues/7).
