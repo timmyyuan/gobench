@@ -17,7 +17,6 @@ This is some description from developers
 > 2. StartTask() is called and attempts to acquire the lock. It is then blocked.
 > 3. Stop() never finishes since the task doesn't call SetStopped.
 
-
 ### backtrace
 
 ```
@@ -39,3 +38,5 @@ command-line-arguments.TestCockroach1055.func1(0xc00001a750)
 created by command-line-arguments.TestCockroach1055
 	/root/gobench/gobench/goker/blocking/cockroach/1055/cockroach1055_test.go:76 +0x21c
 ```
+
+The test cases used here have omitted more details compared to the actual code in the real word project. This could potentially introduce new bugs. You can find further discussions regarding this matter [here](https://github.com/timmyyuan/gobench/issues/7).
