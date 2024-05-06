@@ -44,3 +44,4 @@ Possible intervening
 ///
 ```
 
+It's worthing noting that there is another blocking bug in the extracted kernel, see [issue#18](https://github.com/timmyyuan/gobench/issues/18) for details.
